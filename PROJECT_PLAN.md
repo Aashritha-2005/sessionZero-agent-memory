@@ -240,9 +240,18 @@ cognee-agent-memory/
 
 ## CURRENT STATUS
 
-**Last updated:** July 2, 2026, Day 2 session (in progress, sub-step 1 of 3 done)
+**Last updated:** July 2, 2026, Day 2 session (in progress, sub-step 2 of 3 done)
 
-**Stage:** Day 2 sub-step 1/3 done — `claude_code_bridge` + `recall_service/api.py` built and verified. Dashboard and README not started yet.
+**Stage:** Day 2 sub-steps 1–2/3 done — `claude_code_bridge` + `recall_service/api.py` + dashboard all built and verified. README not started yet.
+
+**Day 2 sub-step 2 (dashboard) — done:**
+- Extended `recall_service/api.py` with `GET /timeline` (every memory unit, chronological, with a query-independent baseline trust score — similarity is neutral/1.0 since there's no active query outside a search — and live-vs-forgotten status) and `POST /forget` (manual prune by commit hash, reusing the exact `dataset_index` resolution already proven in Day 1's `forget_watcher.py`).
+- `dashboard/index.html` — single-page vanilla HTML/JS, no build step. Chronological timeline, HIGH/MEDIUM/LOW/forgotten color-coding, click-to-expand provenance (signals, files, source commit, data_id, superseded-by), and a "forget this" button.
+- **Verified `/timeline` against real data**: `mu-a1f3c02` and `mu-5f2b7c4` (both pruned for real in Day 1) correctly show `status: "forgotten"`; all 13 other entries show `status: "live"`. Exact match to what Day 1's real `forget()` calls did.
+- **Verified the dashboard's actual fetch/render logic end-to-end**, not just the API in isolation: extracted `index.html`'s JS and ran it under Node against the live FastAPI server (`http://127.0.0.1:8000`), executing the same `levelOf()`/rendering logic the browser would. Real result: `timeline count: 15, forgotten: 2, HIGH: 13, LOW: 2`; a live `/recall` query returned both a HIGH and a LOW confidence result as expected.
+- **Known gap, disclosed**: no actual pixel screenshot was taken — the Chrome extension isn't connected in this sandbox and the `preview_start` tool hit an unrelated sandbox permission error (`getcwd: cannot access parent directories`). Per user decision (2026-07-02), the non-visual verification above was accepted as sufficient for now; user will open `dashboard/index.html` themselves in a real browser to visually confirm. Did not trigger a real `/forget` call from the dashboard button in testing (would prune more demo data still needed for the video) — that code path is identical to the twice-already-proven `forget_watcher.py` logic, so this is a coverage note, not an open risk.
+
+**Day 2 sub-step 1 (bridge) — still open item:** a genuine interactive live test where a human watches the `UserPromptSubmit` hook fire inside a running Claude Code UI session hasn't happened yet (verified so far by invoking the hook script directly with the same stdin/stdout JSON contract, which is a strong but not identical proof). `.claude/settings.json` targets this project directory, so a fresh Claude Code session here should trigger it for real — worth a user confirmation when convenient, not blocking.
 
 **Day 2 progress so far:**
 
@@ -257,9 +266,9 @@ cognee-agent-memory/
   - `claude_code_bridge/tests/test_bridge.py` — 5 new unit tests covering the floor cutoff, top-N inclusion, and the always-surface-contradictions behavior. 24/24 tests pass project-wide (`python3 -m pytest claude_code_bridge/tests/ recall_service/tests/ -q`).
   - **Not yet done**: a genuine interactive live test where a human watches the hook fire inside an actual running Claude Code UI session (as opposed to invoking the hook script directly with the same stdin/stdout contract, which is what's verified so far). Since `.claude/settings.json` now targets this very project directory, the next real prompt in a live Claude Code session here should trigger it — worth having the user confirm this fires as expected in practice, since hook settings may only be read at session start rather than hot-reloaded.
 
-**Next task:** Build `dashboard/` (timeline, confidence color-coding, provenance drill-down, manual forget button wired to real `forget()`), then draft `README.md`.
+**Next task:** Draft `README.md` — problem statement, architecture diagram, Cognee API usage table (§3, including the honest improve/memify limitation writeup), setup instructions, AI Assistance Disclosure (§6).
 
-**Blockers:** None. Live in-UI hook confirmation (see note above) would be good to get from the user but isn't blocking further work.
+**Blockers:** None. Live in-UI hook confirmation and visual dashboard check (see notes above) would be good to get from the user but aren't blocking further work.
 
 ---
 
