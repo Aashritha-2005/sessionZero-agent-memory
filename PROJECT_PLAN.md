@@ -240,9 +240,32 @@ cognee-agent-memory/
 
 ## CURRENT STATUS
 
-**Last updated:** July 2, 2026, Day 1 — COMPLETE
+**Last updated:** July 2, 2026, Day 2 session (in progress, sub-step 1 of 3 done)
 
-**Stage:** Day 1 done. Trust scoring, consolidation (reframed), and pruning are all built and verified against real Cognee Cloud data. Ready for Day 2 (agent integration + dashboard).
+**Stage:** Day 2 sub-step 1/3 done — `claude_code_bridge` + `recall_service/api.py` built and verified. Dashboard and README not started yet.
+
+**Day 2 progress so far:**
+
+- **Fresh demo fixture added**: since Day 1's `forget()` demo already pruned the original Postgres/Docker contradiction (`mu-a1f3c02`) from the graph, there was no live LOW-confidence case left to demo. Added a new commit `8c5f0d7` ("Move auth from JWT to server-side session cookies", kind=`contradiction`, supersedes `d5b6e13`) to `demo-data/commits.jsonl` and ingested it for real via a new `ingest/remember_one.py` (single-commit ingest helper). Verified via real `recall()`: `mu-8c5f0d7` scores **0.99 HIGH**, the old `mu-d5b6e13` (JWT decision) scores **0.28 LOW**.
+- **Bug found and fixed while adding the fixture**: `ingest/memory_units.py`'s reference-extraction regex matched *any* 7-hex-char token in a commit message, not just genuine supersession references — an incidental mention like "not repeating the e8c4a71 mistake" would have been misread as a real contradiction reference. Tightened the regex to only match hashes introduced by explicit phrases ("reverts commit X", "Supersedes ... X", "changed from X"). Verified via `python3 -m ingest.memory_units` that all real references (including the new one) still extract correctly with no false positives, and all 19 existing trust-score tests still pass.
+- **`recall_service/api.py`** — FastAPI `/recall` (real trust-scored CHUNKS recall) and `/health`. Verified via `TestClient`: real 200 response, correct HIGH-confidence result for `mu-8c5f0d7` (raw output captured this session).
+- **`claude_code_bridge/bridge.py`** — implements Claude Code's real `UserPromptSubmit` hook contract (reads hook JSON on stdin, prints `{"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "..."}}` on stdout). Wired into `.claude/settings.json` (tracked in git — `.gitignore` narrowed from blanket `.claude/` to just the harness's own lock files, so this real hook config ships with the repo).
+  - **Verified by invoking it exactly as Claude Code's hook runtime would** (same stdin/stdout JSON contract), three real queries:
+    - "Does ShiftLog use JWT for authentication?" → HIGH confidence `mu-8c5f0d7` (0.99) AND LOW confidence `mu-d5b6e13` (0.28, ⚠️ contradiction warning) both surfaced in the same response.
+    - "Should we use Redis pub/sub for real-time shift notifications?" → HIGH confidence `mu-e8c4a71` (revert) surfaced correctly.
+  - **Bug found and fixed**: the LOW-confidence contradicted memory was initially getting cut off by the top-3 `MAX_INJECTED` limit (it ranked 4th by raw score). Fixed `format_context_block()` so contradicted memories always surface regardless of rank — flagging them is the entire point of the tool, so silently dropping one because it ranked 4th would defeat the purpose. Re-verified after the fix: both HIGH and LOW cases now appear together.
+  - `claude_code_bridge/tests/test_bridge.py` — 5 new unit tests covering the floor cutoff, top-N inclusion, and the always-surface-contradictions behavior. 24/24 tests pass project-wide (`python3 -m pytest claude_code_bridge/tests/ recall_service/tests/ -q`).
+  - **Not yet done**: a genuine interactive live test where a human watches the hook fire inside an actual running Claude Code UI session (as opposed to invoking the hook script directly with the same stdin/stdout contract, which is what's verified so far). Since `.claude/settings.json` now targets this very project directory, the next real prompt in a live Claude Code session here should trigger it — worth having the user confirm this fires as expected in practice, since hook settings may only be read at session start rather than hot-reloaded.
+
+**Next task:** Build `dashboard/` (timeline, confidence color-coding, provenance drill-down, manual forget button wired to real `forget()`), then draft `README.md`.
+
+**Blockers:** None. Live in-UI hook confirmation (see note above) would be good to get from the user but isn't blocking further work.
+
+---
+
+### Day 1 summary (COMPLETE)
+
+**Stage:** Day 1 done. Trust scoring, consolidation (reframed), and pruning are all built and verified against real Cognee Cloud data.
 
 **Day 1 summary:**
 
