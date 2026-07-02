@@ -61,22 +61,66 @@
   main { padding: 24px 28px; max-width: 980px; margin: 0 auto; }
   .legend { display: flex; gap: 18px; margin-bottom: 18px; font-size: 12px; color: var(--muted); }
   .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+
+  /* Timeline rail: a vertical connecting line threading through every
+     entry's marker dot, so the page reads as chronological memory
+     rather than a generic list of cards. */
+  #list { position: relative; }
+  #list::before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: var(--border);
+  }
+  .tl-row { position: relative; padding-left: 34px; margin-bottom: 16px; }
+  .tl-dot {
+    position: absolute;
+    left: 4px;
+    top: 22px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+    z-index: 1;
+  }
+  .tl-dot.HIGH { background: var(--high); }
+  .tl-dot.MEDIUM { background: var(--medium); }
+  .tl-dot.LOW { background: var(--low); }
+  .tl-dot.forgotten { background: var(--forgotten); }
+
   .timeline-item {
     background: var(--card);
     border: 1px solid var(--border);
     border-left: 4px solid var(--border);
     border-radius: 8px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
+    padding: 16px 18px;
     transition: opacity 0.2s;
   }
-  .timeline-item.forgotten { opacity: 0.45; }
+  .timeline-item.forgotten { opacity: 0.5; }
   .timeline-item.HIGH { border-left-color: var(--high); }
   .timeline-item.MEDIUM { border-left-color: var(--medium); }
-  .timeline-item.LOW { border-left-color: var(--low); }
+  .timeline-item.LOW {
+    border-left-color: var(--low);
+    background: linear-gradient(rgba(197,34,31,0.10), rgba(197,34,31,0.10)), var(--card);
+  }
   .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-  .title { font-size: 14px; font-weight: 600; }
-  .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .title { font-size: 17px; font-weight: 700; line-height: 1.3; }
+  .title.forgotten-title { text-decoration: line-through; text-decoration-color: var(--forgotten); text-decoration-thickness: 2px; color: var(--muted); font-weight: 500; }
+  .warn-icon { margin-right: 6px; }
+  .meta { color: var(--muted); font-size: 11px; margin-top: 6px; letter-spacing: 0.2px; }
+  .supersedes {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(138,180,248,0.14);
+    color: #8ab4f8;
+  }
+  .supersedes code { color: inherit; }
   .badge {
     font-size: 11px;
     font-weight: 700;
@@ -89,7 +133,7 @@
   .badge.LOW { background: rgba(197,34,31,0.18); color: var(--low); }
   .badge.forgotten { background: rgba(154,160,168,0.18); color: var(--forgotten); }
   .provenance {
-    margin-top: 10px;
+    margin-top: 12px;
     padding-top: 10px;
     border-top: 1px dashed var(--border);
     font-size: 12px;
@@ -139,6 +183,12 @@ function levelOf(label) {
 function renderItem(e, isRecallResult) {
   const level = levelOf(e.label);
   const forgotten = e.status === "forgotten";
+  const isContradictionKind = e.kind === "contradiction";
+  const supersedesHashes = e.references && e.references.length ? e.references : null;
+
+  const row = document.createElement("div");
+  row.className = "tl-row";
+
   const div = document.createElement("div");
   div.className = `timeline-item ${level} ${forgotten ? "forgotten" : ""}`;
 
@@ -149,8 +199,9 @@ function renderItem(e, isRecallResult) {
   div.innerHTML = `
     <div class="row">
       <div>
-        <div class="title">${title}</div>
+        <div class="title ${forgotten ? "forgotten-title" : ""}">${level === "LOW" ? '<span class="warn-icon">⚠️</span>' : ""}${title}</div>
         <div class="meta">${e.kind || ""} · commit <code>${e.source_commit}</code> ${e.timestamp ? "· " + new Date(e.timestamp).toLocaleDateString() : ""}</div>
+        ${isContradictionKind && supersedesHashes ? `<div class="supersedes">supersedes <code>${supersedesHashes.join(", ")}</code></div>` : ""}
       </div>
       <div>
         ${forgotten ? '<span class="badge forgotten">FORGOTTEN</span>' : `<span class="badge ${level}">${e.label}</span>`}
@@ -173,16 +224,18 @@ function renderItem(e, isRecallResult) {
     </div>
   `;
 
-  div.querySelector(".title").parentElement.parentElement
-    .insertAdjacentHTML("beforeend", "");
-
   div.addEventListener("click", (ev) => {
     if (ev.target.tagName === "BUTTON") return;
     const prov = div.querySelector(".provenance");
     prov.classList.toggle("open");
   });
 
-  return div;
+  const marker = document.createElement("div");
+  marker.className = `tl-dot ${forgotten ? "forgotten" : level}`;
+  row.appendChild(marker);
+  row.appendChild(div);
+
+  return row;
 }
 
 function toggleProv(btn) {
