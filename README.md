@@ -17,6 +17,10 @@ AI coding agents (Claude Code, Codex, etc.) have no memory across sessions. Bolt
 
 cognee-agent-memory is a memory layer built on top of [Cognee](https://www.cognee.ai)'s knowledge-graph memory lifecycle (`remember` / `recall` / `improve`+`memify` / `forget`), with one addition: every recalled memory is trust-scored and labeled **HIGH / MEDIUM / LOW confidence** before it ever reaches the agent. A stale, contradicted memory doesn't get silently dropped *or* silently trusted — it gets surfaced with a visible warning, so the human (or the agent) can decide.
 
+### Why not just grep the git log?
+
+A naive approach — text-search commit history, or dump the last N commits into the agent's context — solves *recall* but not *trust*. It has no way to know that a decision from three months ago was later contradicted or reverted; it would hand the agent both the original decision and its replacement with equal weight, and the agent has no signal for which one to believe. Storage isn't the hard part — any grep-able log or vector index gives you that. The actual value here is **contradiction-aware trust scoring at read time**: recognizing that two memories disagree, and telling the agent (and the human) which one to trust and why, instead of silently picking one or handing over both as if they were equally current.
+
 ---
 
 ## Architecture
@@ -64,19 +68,9 @@ demo-data/commits.jsonl (synthetic-but-realistic commit history)
 | `recall_service/` | `trust_score.py` — the four-signal scoring function; `api.py` — FastAPI `/recall`, `/timeline`, `/forget` |
 | `consolidate/` | `memify_job.py` — consolidation, reframed to reference-graph analysis + real `forget()`, verified via before/after `recall()` (see below) |
 | `prune/` | `forget_watcher.py` — detects deleted/superseded memories, calls real `forget()` |
-| `claude_code_bridge/` | `bridge.py` — a real Claude Code `UserPromptSubmit` hook that injects trust-labeled recall context before the agent responds. Confirmed working in a live Claude Code session, not just via direct script invocation — asking *"Does ShiftLog use JWT for authentication?"* correctly surfaced both the HIGH-confidence current decision and the LOW-confidence superseded one, and Claude Code's answer cited both. `codex_bridge.py` — a second, independent hook for Codex, proving the underlying service is agent-agnostic (see "Beyond Claude Code" below). |
+| `claude_code_bridge/` | `bridge.py` — a real Claude Code `UserPromptSubmit` hook that injects trust-labeled recall context before the agent responds. Confirmed working in a live Claude Code session, not just via direct script invocation — asking *"Does ShiftLog use JWT for authentication?"* correctly surfaced both the HIGH-confidence current decision and the LOW-confidence superseded one, and Claude Code's answer cited both. `codex_bridge.py` — an extensibility demo for Codex (see "Future work" below). |
 | `dashboard/` | `index.html` — single-page timeline UI, no build step |
 | `demo-data/` | Synthetic-but-realistic commit history + session transcripts for a fictional project ("ShiftLog"), generated for this demo rather than pulled from a real external repo |
-
----
-
-## Beyond Claude Code
-
-The core of this system isn't "a Claude Code plugin" — it's `recall_service/api.py`, a plain HTTP service exposing trust-scored recall. `claude_code_bridge/bridge.py` is *one* integration on top of it. Any agent that can make an HTTP request and read a JSON response can use the exact same trust-calibrated memory.
-
-We didn't just assert this — we built a second, independent bridge to prove it. `claude_code_bridge/codex_bridge.py` implements Codex's real `UserPromptSubmit` hook contract (verified by reading Cognee's own shipped Codex plugin source on GitHub — turns out Codex's hook wire format is byte-identical to Claude Code's: same stdin `{"prompt": "..."}`, same stdout `{"hookSpecificOutput": {...}}`) and talks to `recall_service/api.py`'s `/recall` endpoint purely over HTTP — it doesn't import anything from `bridge.py`, exactly as a genuinely separate agent process would have to.
-
-**Honesty check, same standard as the rest of this project:** `codex_bridge.py` is verified two ways — structurally, against Cognee's real Codex plugin source (not guessed), and functionally, with a real HTTP call against the live `recall_service` that returns correct HIGH/LOW confidence results. It has **not** been run inside an actual Codex CLI session — that would require installing Codex and the full `codex plugin marketplace add ...` flow, which was out of scope for the time left before the deadline. Don't read this as "Codex integration, fully live-tested" — read it as "the agent-agnostic architecture claim, backed by a real second client hitting the real service, one honest step short of a live Codex session."
 
 ---
 
@@ -105,10 +99,12 @@ We'd rather show you exactly where the hosted API's real boundary is than claim 
 
 `recall_service/trust_score.py` combines four signals into one score, deliberately kept as a simple, explainable weighted mean rather than anything opaque:
 
-1. **`path_length_score`** — from Cognee's real `topological_rank` field on graph search results. Shorter path = more directly connected = higher trust. *Known limitation:* in this demo's graph size, `topological_rank` comes back `0` for every result, so this signal isn't currently discriminating between memories — it's a real API-sourced field, just not yet varying at this scale.
-2. **`similarity_score`** — Cognee Cloud's `CHUNKS` search returns pre-ranked results but no raw cosine score in this API version (`score: null`), so we use rank position as the similarity proxy: top-ranked result scores near 1.0.
-3. **`recency_score`** — exponential decay from the memory's source-commit timestamp, 30-day half-life.
-4. **`contradiction_penalty`** — a flat penalty applied when a newer ingested memory explicitly supersedes this one (tracked via reference extraction from commit messages, not from Cognee directly).
+1. **`path_length_score`** — from Cognee's real `topological_rank` field on graph search results. Included because a memory that's more directly connected in the knowledge graph is more likely to be a first-order fact about the thing you asked, rather than something pulled in by a loose or indirect association — shorter path should mean higher trust. *Known limitation:* in this demo's graph size, `topological_rank` comes back `0` for every result, so this signal isn't currently discriminating between memories — it's a real API-sourced field, just not yet varying at this scale.
+2. **`similarity_score`** — Cognee Cloud's `CHUNKS` search returns pre-ranked results but no raw cosine score in this API version (`score: null`), so we use rank position as the similarity proxy. Included because relevance to the actual question is table-stakes — a highly-trusted memory that's off-topic still shouldn't dominate the answer, so semantic match has to be one of the inputs, not an afterthought.
+3. **`recency_score`** — exponential decay from the memory's source-commit timestamp, 30-day half-life. Included because architecture decisions and bug fixes go stale even without an explicit contradiction being recorded — a half-life gives old-but-never-formally-superseded memories a gentle downward pull instead of treating a two-year-old note and a two-day-old one as equally current.
+4. **`contradiction_penalty`** — a flat penalty applied when a newer ingested memory explicitly supersedes this one (tracked via reference extraction from commit messages, not from Cognee directly). Included because this is the actual failure mode the project exists to prevent (see "Why not just grep the git log?" above) — an explicit contradiction is the strongest, most direct signal that a memory is wrong *now*, so it's weighted as a multiplicative discount on the whole score rather than just another additive term, deliberately making it capable of overriding otherwise-high path/similarity/recency scores.
+
+The specific weights (equal thirds for the first three signals, 0.6 for the contradiction penalty, 30-day recency half-life) are reasoned defaults chosen for explainability, not the result of empirical tuning against a labeled dataset — we'd rather say that plainly than imply a rigor we haven't done.
 
 ```
 score = mean(path_length, similarity, recency) × (1 − contradiction_penalty)
@@ -146,6 +142,14 @@ python3 -m pytest recall_service/tests/ claude_code_bridge/tests/ -v
 ```
 
 The `claude_code_bridge/bridge.py` hook is wired into `.claude/settings.json` as a `UserPromptSubmit` hook — opening this project in Claude Code will inject trust-labeled recall context before every prompt automatically.
+
+---
+
+## Future work: agent-agnostic by design
+
+`recall_service/api.py` is a plain HTTP service exposing trust-scored recall — it isn't tied to Claude Code specifically. `claude_code_bridge/bridge.py` is one integration on top of it, and it's the one that's actually proven: live-tested inside a real Claude Code session (see above).
+
+As an extensibility note, not a proof point: `claude_code_bridge/codex_bridge.py` sketches what a second integration would look like for Codex. It implements Codex's real `UserPromptSubmit` hook contract — copied from Cognee's own shipped Codex plugin source on GitHub, not guessed — and makes real HTTP calls to `recall_service/api.py`'s `/recall` endpoint, returning correct HIGH/LOW confidence results when invoked directly. **It has not been tested inside a live Codex session** — that would require installing Codex and the full `codex plugin marketplace add ...` flow, which was out of scope for the time available. Treat it as a demonstration of the integration pattern, not a validated second-agent deployment.
 
 ---
 
