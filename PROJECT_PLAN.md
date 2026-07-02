@@ -240,9 +240,9 @@ cognee-agent-memory/
 
 ## CURRENT STATUS
 
-**Last updated:** July 2, 2026, Day 1 session (in progress, checkpoint 1 of N)
+**Last updated:** July 2, 2026, Day 1 session (in progress, checkpoint 2 of N)
 
-**Stage:** Day 1 — trust scoring done and verified against real data; consolidation and pruning not started yet.
+**Stage:** Day 1 — trust scoring done and verified. Consolidation (improve/memify) hit a real platform limitation and is documented, not faked. Pruning (forget) not started yet.
 
 **Day 1 progress so far:**
 - Built `recall_service/trust_score.py`: four signals — `path_length_score` (from Cognee's real `topological_rank` field on CHUNKS results), `similarity_score` (rank-position proxy, since Cognee Cloud's CHUNKS endpoint returns `score: null` — no raw cosine score exposed in this API version, so we use ranked order instead), `recency_score` (exponential decay, half-life 30 days, computed from our own ingestion-time commit timestamps), `contradiction_penalty` (flat 0.6 penalty, driven by the `references` graph `ingest/memory_units.py` already extracts from revert/contradiction commit messages). Combined as `mean(path, similarity, recency) * (1 - contradiction_penalty)`, clipped to [0,1] — deliberately simple per §7.
@@ -252,14 +252,16 @@ cognee-agent-memory/
   - Clean control case (N+1 bug fix, uncontradicted): scored 0.834 HIGH, confirming contradiction — not just age — is what's driving the low score above.
 - **Known limitation (being upfront, not overclaiming):** `path_length_score` returned 1.0 for every chunk in this run — `topological_rank` is 0 across the board in this small demo graph, so that signal isn't discriminating yet. It's a real API-sourced field, just not yet varying in a graph this size.
 - Wrote `recall_service/tests/test_trust_score.py` — 19 real unit tests covering all four signals independently (path length, similarity, recency, contradiction) plus combine/label logic and one integration-style test. All 19 pass (`python3 -m pytest recall_service/tests/test_trust_score.py -v`).
+- **`consolidate/memify_job.py` — real platform limitation discovered, not a bug in our code.** Attempted a real `client.improve(dataset_name="shiftlog_demo")` call and got `RuntimeError: API error 404: {'detail': 'Not Found'}`. Verified this is genuine by fetching the tenant's live `GET /openapi.json`: this Cognee Cloud tenant's hosted REST API (server v1.0.0) only exposes `add`, `add_text`, `cognify`, `remember`, `remember/entry`, `recall`, `forget`, plus dataset/session/permission/schema endpoints — **no `/api/v1/improve` or `/api/v1/memify`**. The pip-installed `cognee==1.2.2` SDK has those as in-process Python functions, but calling them would build a disconnected *local* graph (needs its own LLM key), not operate on the `shiftlog_demo` cloud dataset we actually ingested — so it wouldn't demonstrate real consolidation on our real data. **User decision (2026-07-02): document this as a known limitation, do not fake or route around it, move on to `forget()`.** `consolidate/memify_job.py` is left in place with `run_improve()` implemented for real (it will raise clearly, not silently mock, if called against a 404ing tenant) so it's ready the moment the tenant adds the endpoint. This gap will be disclosed plainly in the README's Cognee API usage table (§3) — we will NOT claim full `improve()`/`memify()` usage if it isn't real.
 
-**Next task:** Wire `consolidate/memify_job.py` (real `improve()`/`memify()` calls against `shiftlog_demo`), test specifically against the `mu-2c9e4f1` vs `mu-a1f3c02` contradiction pair to confirm Cognee's own consolidation actually merges/reweights them (as opposed to our trust-scoring layer just working around the contradiction at query time). Then `prune/forget_watcher.py` using the `mu-5f2b7c4` CSV-export deletion as the test case.
+**Next task:** Wire `prune/forget_watcher.py` using the real `forget()` endpoint (confirmed present in the tenant's OpenAPI spec), tested against the `mu-5f2b7c4` CSV-export deletion case from `demo-data/commits.jsonl`. Show raw before/after `recall()` output proving the forgotten memory is actually gone from the graph.
 
-**Blockers:** None. Exact hackathon submission deadline time still needs confirming from the Schedule tab (low priority until Day 3).
+**Blockers:** None for `forget()`. `improve()`/`memify()` remain blocked by a real hosted-API gap on this tenant (not something we can code around) — revisit only if Cognee adds the endpoint before submission; otherwise this is now a documented, honest limitation rather than an open task. Exact hackathon submission deadline time still needs confirming from the Schedule tab (low priority until Day 3).
 
 **Notes for next session:**
-- `recall_service/verify_trust_score.py` is the pattern to reuse for showing raw before/after output on the consolidation and pruning steps too — user wants raw output shown at each sub-step, not just a summary.
+- `recall_service/verify_trust_score.py` and `consolidate/verify_consolidation.py` are the pattern to reuse for showing raw before/after output on the pruning step too — user wants raw output shown at each sub-step, not just a summary.
 - Trust scoring signal weights (equal thirds + 0.6 contradiction penalty, 30-day recency half-life) are hardcoded constants at the top of `trust_score.py` — revisit if Day 2 demo tuning wants different behavior, but keep them simple/explainable per §7.
+- When writing the README's Cognee API usage table (§3), be precise: `remember()` and `recall()` are fully, deeply exercised (14 real ingested memories, trust-scored real recall queries); `forget()` will be real (next step); `improve()`/`memify()` are implemented in code but blocked by a real hosted-tenant API gap — say so plainly, do not imply they ran successfully.
 
 ---
 
