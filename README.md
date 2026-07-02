@@ -7,6 +7,8 @@ Built for *The Hangover Part AI: Where's My Context?* (WeMakeDevs x Cognee hacka
 >
 > cognee-agent-memory fixes both problems: it remembers, **and it tells you how sure it is and why.**
 
+**Demo video:** _[to be added — recording in progress, see `demo/demo_script.md` for the shot list]_
+
 ---
 
 ## The problem
@@ -30,8 +32,8 @@ demo-data/commits.jsonl (synthetic-but-realistic commit history)
         │                                              │
         │                                              ▼
   consolidate/memify_job.py                   (see "Cognee API usage" below —
-  (recall()+forget()-based                      improve()/memify() are SDK-only
-   consolidation, see below)                    on Cognee Cloud, so this step
+  (reference-graph + real forget(),             improve()/memify() are SDK-only
+   verified via recall() before/after)          on Cognee Cloud, so this step
         │                                        is a real, honest adaptation)
         │                                              │
   DEV WORKS IN CLAUDE CODE ──UserPromptSubmit hook──▶  RECALL (Cognee recall())
@@ -60,9 +62,9 @@ demo-data/commits.jsonl (synthetic-but-realistic commit history)
 |---|---|
 | `ingest/` | Reads commit history (`demo-data/commits.jsonl`), structures it into "memory units" (decisions, bug+fix pairs, reverts, contradictions, deletions) with provenance, calls real `remember()` |
 | `recall_service/` | `trust_score.py` — the four-signal scoring function; `api.py` — FastAPI `/recall`, `/timeline`, `/forget` |
-| `consolidate/` | `memify_job.py` — consolidation, reframed to `recall()`+`forget()` (see below) |
+| `consolidate/` | `memify_job.py` — consolidation, reframed to reference-graph analysis + real `forget()`, verified via before/after `recall()` (see below) |
 | `prune/` | `forget_watcher.py` — detects deleted/superseded memories, calls real `forget()` |
-| `claude_code_bridge/` | `bridge.py` — a real Claude Code `UserPromptSubmit` hook that injects trust-labeled recall context before the agent responds |
+| `claude_code_bridge/` | `bridge.py` — a real Claude Code `UserPromptSubmit` hook that injects trust-labeled recall context before the agent responds. Confirmed working in a live Claude Code session, not just via direct script invocation — asking *"Does ShiftLog use JWT for authentication?"* correctly surfaced both the HIGH-confidence current decision and the LOW-confidence superseded one, and Claude Code's answer cited both. |
 | `dashboard/` | `index.html` — single-page timeline UI, no build step |
 | `demo-data/` | Synthetic-but-realistic commit history + session transcripts for a fictional project ("ShiftLog"), generated for this demo rather than pulled from a real external repo |
 
@@ -81,9 +83,9 @@ This project deliberately exercises Cognee's memory lifecycle as deeply as the h
 | API | How it's used here | Status |
 |---|---|---|
 | **`remember()`** | Every commit becomes a "memory unit" (decision, bug+fix, revert, contradiction, or deletion) and is ingested via a real call to Cognee Cloud's `/api/v1/remember`. 15 memory units ingested across two batches. | ✅ Real, verified |
-| **`recall()`** | Queried live by `claude_code_bridge/bridge.py` before every coding-session prompt, by `recall_service/api.py`'s `/recall` and `/timeline` endpoints, and directly in `trust_score.py`'s scoring pipeline. Uses Cognee's `CHUNKS` search type for ranked, scorable results. | ✅ Real, verified |
+| **`recall()`** | Queried live by `claude_code_bridge/bridge.py` before every coding-session prompt, by `recall_service/api.py`'s `/recall` endpoint, and directly in `trust_score.py`'s scoring pipeline — all using Cognee's `CHUNKS` search type for ranked, scorable results. (`recall_service/api.py`'s `/timeline` endpoint does *not* call `recall()` — it lists the dataset's data directly and computes a query-independent baseline score, since a chronological view has no query to search against.) | ✅ Real, verified |
 | **`forget()`** | Triggered on two kinds of real events: (1) a file/feature deletion commit (`prune/forget_watcher.py`), and (2) a memory unit that a newer, contradicting memory unit supersedes (`consolidate/memify_job.py`). Both were verified with real before/after `recall()` diffs proving the graph actually changed, not just that an API call returned 200. Also manually triggerable from the dashboard. | ✅ Real, verified |
-| **`improve()` / `memify()`** | **Honest limitation, not a workaround.** Verified two independent ways — the tenant's live `GET /openapi.json`, and Cognee's own docs at docs.cognee.ai/api-reference — that `improve()`/`memify()` are **SDK-only**: they take live Python objects and are architecturally not exposed as HTTP endpoints on Cognee Cloud. Calling the in-process SDK functions would build a disconnected *local* graph (needing its own separate LLM key) rather than operate on the real ingested cloud dataset, so it wouldn't demonstrate anything real. **Consolidation is instead implemented as a legitimate adaptation**: `consolidate/memify_job.py`'s `consolidate_contradictions()` uses the same reference graph `ingest/memory_units.py` extracts from commit messages, resolves each superseded memory's real Cognee `data_id`, and calls real `forget()` — achieving the same practical outcome (stale/contradicted knowledge is pruned) within what the hosted API actually supports. | ⚠️ SDK-only on Cognee Cloud — reframed via `recall()`+`forget()`, not called directly |
+| **`improve()` / `memify()`** | **Honest limitation, not a workaround.** Verified two independent ways — the tenant's live `GET /openapi.json`, and Cognee's own docs at docs.cognee.ai/api-reference — that `improve()`/`memify()` are **SDK-only**: they take live Python objects and are architecturally not exposed as HTTP endpoints on Cognee Cloud. Calling the in-process SDK functions would build a disconnected *local* graph (needing its own separate LLM key) rather than operate on the real ingested cloud dataset, so it wouldn't demonstrate anything real. **Consolidation is instead implemented as a legitimate adaptation**: `consolidate/memify_job.py`'s `consolidate_contradictions()` uses the reference graph `ingest/memory_units.py` extracts from commit messages to identify superseded memories, resolves each one's real Cognee `data_id` (via a dataset listing, not a search), and calls real `forget()` on it — achieving the same practical outcome (stale/contradicted knowledge is pruned) within what the hosted API actually supports. The before/after proof that pruning worked uses a real `recall()` query, but `recall()` itself is not part of the consolidation logic — it's the verification step. | ⚠️ SDK-only on Cognee Cloud — reframed via reference-graph analysis + real `forget()`, verified with `recall()` |
 
 We'd rather show you exactly where the hosted API's real boundary is than claim four-for-four when one of those calls would have been fake.
 
@@ -93,7 +95,7 @@ We'd rather show you exactly where the hosted API's real boundary is than claim 
 
 `recall_service/trust_score.py` combines four signals into one score, deliberately kept as a simple, explainable weighted mean rather than anything opaque:
 
-1. **`path_length_score`** — from Cognee's real `topological_rank` field on graph search results. Shorter path = more directly connected = higher trust.
+1. **`path_length_score`** — from Cognee's real `topological_rank` field on graph search results. Shorter path = more directly connected = higher trust. *Known limitation:* in this demo's graph size, `topological_rank` comes back `0` for every result, so this signal isn't currently discriminating between memories — it's a real API-sourced field, just not yet varying at this scale.
 2. **`similarity_score`** — Cognee Cloud's `CHUNKS` search returns pre-ranked results but no raw cosine score in this API version (`score: null`), so we use rank position as the similarity proxy: top-ranked result scores near 1.0.
 3. **`recency_score`** — exponential decay from the memory's source-commit timestamp, 30-day half-life.
 4. **`contradiction_penalty`** — a flat penalty applied when a newer ingested memory explicitly supersedes this one (tracked via reference extraction from commit messages, not from Cognee directly).
