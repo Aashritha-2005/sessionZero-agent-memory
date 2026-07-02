@@ -242,20 +242,23 @@ cognee-agent-memory/
 
 **Last updated:** July 2, 2026, afternoon session
 
-**Stage:** Day 0 — in progress
+**Stage:** Day 0 — COMPLETE
 
 **Done this session:**
 - Scaffolded full repo structure per §5 (`ingest/`, `recall_service/`, `consolidate/`, `prune/`, `claude_code_bridge/`, `dashboard/`, `demo/`, `.env.example`), git initialized, `.venv` created, `requirements.txt` installed.
 - **Scope change (user-directed):** demo data is NOT pulled from an external repo (HireScript/TaskFlow). Instead, `demo-data/` contains hand-authored, realistic synthetic data for a fictional project "ShiftLog": `commits.jsonl` (14 commits covering decisions, bug+fix pairs, a revert/rejected-approach, a later contradicting decision, and a file deletion) plus two session transcripts (`session_001_amnesia.md` showing the pain point, `session_002_with_memory.md` showing target behavior with HIGH/LOW confidence labels — this is aspirational reference for Day 2, not yet real bridge output).
-- Built `ingest/git_reader.py` (parses `demo-data/commits.jsonl`, named to match the pipeline's git-log-reader role even though the source is synthetic) and `ingest/memory_units.py` (structures commits into MemoryUnit objects with provenance + cross-references, e.g. the revert/contradiction commits correctly link back to the commits they supersede). Verified via `python3 -m ingest.memory_units` — all 14 units parse correctly with references extracted.
-- Installed real Cognee SDK (`cognee==1.2.2`) in `.venv`. Confirmed the installed API surface matches the plan exactly: `cognee.remember`, `.recall`, `.improve`, `.memify`, `.forget` all exist with real signatures (inspected via `inspect.signature`).
-- Built `ingest/remember_client.py` wrapping `cognee.remember()` per memory unit into dataset `shiftlog_demo`. Not yet run against real Cognee — blocked on credentials (see below).
+- Built `ingest/git_reader.py` (parses `demo-data/commits.jsonl`) and `ingest/memory_units.py` (structures commits into MemoryUnit objects with provenance + cross-references). Verified via `python3 -m ingest.memory_units` — all 14 units parse correctly with references extracted (e.g. the revert and contradiction commits correctly link back to what they supersede).
+- Installed real Cognee SDK (`cognee==1.2.2`) in `.venv`. User's Cognee Cloud tenant credentials (`COGNEE_API_KEY`, `COGNEE_API_BASE_URL`, `COGNEE_TENANT_ID`) added to `.env` (confirmed gitignored, not tracked).
+- Built `ingest/remember_client.py` using `cognee.cli.api_client.CogneeApiClient` (the same HTTP client the `cognee` CLI uses in `--api-url` mode) to call the real hosted `/api/v1/remember` endpoint with `X-Api-Key` auth — this is the correct integration path for Cognee Cloud (the in-process `cognee.remember()` needs its own local LLM key for extraction; the cloud tenant does extraction server-side). Had to raise the client timeout from the 120s default to 600s — real server-side graph extraction took 13–43s per item and the default timeout truncated the run partway through on the first attempt.
+- **Ran real ingestion: all 14/14 memory units successfully remembered** into Cognee Cloud dataset `shiftlog_demo` (`dataset_id: e9ff219e-cb70-5b18-8f4e-2bdf45aa6831`). Raw per-item responses (status, pipeline_run_id, items_processed, elapsed_seconds) captured in session transcript.
+- **Ran real sanity `recall()` query** ("Why was Redis pub/sub reverted for shift-change notifications?") against `shiftlog_demo` — got back a correct `GRAPH_COMPLETION` answer pulled from the `mu-e8c4a71` revert memory unit, confirming the data is genuinely stored and queryable in the knowledge graph, not just accepted by the ingest endpoint.
+- Added `ingest/recall_check.py` as a reusable sanity-check script.
 
-**Next task:** User needs to copy `.env.example` → `.env` and fill in real Cognee Cloud credentials (`COGNEE_API_KEY`, and an LLM key if Cognee Cloud requires one separately for graph extraction). Once present, run `python3 -m ingest.remember_client` from the project venv to get the first real `remember()` calls in, then sanity-check with a raw `cognee.recall()` query to confirm the data is queryable. That completes Day 0.
+**Next task:** Begin Day 1 — build `recall_service/trust_score.py` (path-length score, embedding similarity, recency decay, contradiction penalty → HIGH/MEDIUM/LOW label), with unit tests in `recall_service/tests/test_trust_score.py`. The `shiftlog_demo` dataset already has real contradiction (`mu-2c9e4f1` vs `mu-a1f3c02`) and revert (`mu-e8c4a71`) cases ingested, so the trust scorer can be tested against real recall() output, not synthetic scoring inputs.
 
-**Blockers:** Waiting on user to populate `.env` with real Cognee credentials — cannot make real `remember()`/`recall()` calls without them (no-mocking rule in §7 is being followed strictly).
+**Blockers:** None. Exact hackathon submission deadline time still needs confirming from the Schedule tab (open item from the Day 0 checklist, low priority until Day 3).
 
 **Notes for next session:**
-- Demo data lives entirely inside `cognee-agent-memory/demo-data/` — do not read from any repo outside this project folder (explicit user instruction).
-- Exact hackathon submission deadline time has NOT yet been confirmed from the Schedule tab — still open from the Day 0 checklist.
-- Once `.env` is filled and `remember_client.py` runs successfully, proceed to Day 1: `recall_service/trust_score.py`.
+- Demo data lives entirely inside `cognee-agent-memory/demo-data/` — do not read from any repo outside this project folder (explicit user instruction, saved to memory).
+- Cognee Cloud integration goes through `CogneeApiClient` (`ingest/remember_client.py`'s `_client()` helper), not the in-process `cognee.remember()` — reuse that pattern for `recall_service/`, `consolidate/memify_job.py`, and `prune/forget_watcher.py` rather than re-deriving it.
+- Real server round-trips are slow (10–45s per remember() call); when building `recall_service`'s FastAPI wrapper, do not assume sub-second latency in tests/demo timing.
