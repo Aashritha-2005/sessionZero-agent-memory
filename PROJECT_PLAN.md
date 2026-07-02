@@ -240,9 +240,13 @@ cognee-agent-memory/
 
 ## CURRENT STATUS
 
-**Last updated:** July 2, 2026, Day 2 — COMPLETE
+**Last updated:** July 2, 2026, Day 2 — FULLY COMPLETE (all items confirmed, none open)
 
-**Stage:** Day 2 done: `claude_code_bridge`, dashboard, and `README.md` all built and verified. Ready for Day 3 (demo video, submission polish).
+**Stage:** Day 2 fully done, including live confirmation. Moving into Day 3 (demo video, README final pass, submission compliance).
+
+**Day 2 closeout — live hook test PASSED (user-confirmed 2026-07-02):** the last open item from Day 2 — a human watching the `UserPromptSubmit` hook fire inside an actual running Claude Code UI session, as opposed to invoking it directly with the same stdin/stdout contract — is now done. In a fresh Claude Code session on this project, the hook fired for real and injected both the LOW-confidence superseded JWT memory (`mu-d5b6e13`) and the HIGH-confidence current session-cookie memory (`mu-8c5f0d7`); Claude Code synthesized the correct current-state answer citing both commit hashes rather than picking one blindly. This is the exact "wow moment" the plan's §6 demo beat sheet calls for (beat 3 and 4 — HIGH correctly trusted, LOW correctly flagged instead of blindly trusted), now proven live end-to-end, not just via direct script invocation. No code changes were needed — the hook worked as built.
+
+**Dashboard visual polish (since last update):** `dashboard/index.html` received a presentation-only pass per user request — vertical timeline rail with colored marker dots, strikethrough on forgotten titles, red-tinted cards + ⚠️ icon on LOW-confidence entries, "supersedes &lt;hash&gt;" labels on the two contradiction-kind entries (using the `references` field already returned by `/timeline`), tighter title/metadata type hierarchy. Verified via a live `/timeline` fetch that all data (contradiction references, LOW/forgotten status/counts) is unchanged — markup/CSS only, no logic touched.
 
 **Day 2 sub-step 3 (README) — done:**
 - `README.md` drafted: problem statement, ASCII architecture diagram, component table, "why synthetic demo data" explainer, the full Cognee API usage table (§3) — including the honest `improve()`/`memify()` limitation writeup as a called-out strength rather than something downplayed — trust-scoring explainer with the real verified JWT example (0.99 HIGH vs 0.28 LOW), setup instructions, and the AI Assistance Disclosure (§6).
@@ -270,9 +274,9 @@ cognee-agent-memory/
   - `claude_code_bridge/tests/test_bridge.py` — 5 new unit tests covering the floor cutoff, top-N inclusion, and the always-surface-contradictions behavior. 24/24 tests pass project-wide (`python3 -m pytest claude_code_bridge/tests/ recall_service/tests/ -q`).
   - **Not yet done**: a genuine interactive live test where a human watches the hook fire inside an actual running Claude Code UI session (as opposed to invoking the hook script directly with the same stdin/stdout contract, which is what's verified so far). Since `.claude/settings.json` now targets this very project directory, the next real prompt in a live Claude Code session here should trigger it — worth having the user confirm this fires as expected in practice, since hook settings may only be read at session start rather than hot-reloaded.
 
-**Next task:** Begin Day 3 (§4) — record the demo video (2–3 min, beat sheet in §6), confirm the exact submission deadline time from the Schedule tab, final rule-compliance check (§0.1), optional blog post / social posts, submit with buffer before the deadline.
+**Next task:** Day 3 (§4) in progress — demo video shot list being planned against what's actually verified (not aspirational), README final accuracy pass, full §0.1 rule-compliance checklist, then confirm exact submission deadline time from the Schedule tab, then submit with buffer.
 
-**Blockers:** None. Two non-blocking open items carried from Day 2: (1) live in-UI confirmation that the Claude Code hook actually fires in a real running session (verified so far via direct invocation with the identical stdin/stdout contract, not yet watched fire live); (2) a real pixel screenshot of the dashboard (verified so far via real functional/data checks, not visually — user will check this themselves). Neither blocks recording the demo video, since both code paths are proven to work correctly with real data.
+**Blockers:** None. Both items carried from Day 2 (live hook confirmation, visual dashboard check) are now resolved — see closeout note above.
 
 ---
 
