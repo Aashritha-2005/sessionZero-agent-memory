@@ -240,11 +240,32 @@ cognee-agent-memory/
 
 ## CURRENT STATUS
 
-**Last updated:** July 2, 2026, afternoon session
+**Last updated:** July 2, 2026, Day 1 session (in progress, checkpoint 1 of N)
 
-**Stage:** Day 0 — COMPLETE
+**Stage:** Day 1 — trust scoring done and verified against real data; consolidation and pruning not started yet.
 
-**Done this session:**
+**Day 1 progress so far:**
+- Built `recall_service/trust_score.py`: four signals — `path_length_score` (from Cognee's real `topological_rank` field on CHUNKS results), `similarity_score` (rank-position proxy, since Cognee Cloud's CHUNKS endpoint returns `score: null` — no raw cosine score exposed in this API version, so we use ranked order instead), `recency_score` (exponential decay, half-life 30 days, computed from our own ingestion-time commit timestamps), `contradiction_penalty` (flat 0.6 penalty, driven by the `references` graph `ingest/memory_units.py` already extracts from revert/contradiction commit messages). Combined as `mean(path, similarity, recency) * (1 - contradiction_penalty)`, clipped to [0,1] — deliberately simple per §7.
+- **Verified against real recall() data, not synthetic inputs** (`recall_service/verify_trust_score.py`, raw output in this session's transcript):
+  - Revert case (`mu-e8c4a71`): scored 0.785 HIGH CONFIDENCE.
+  - **Contradiction case — the key result:** query "Is ShiftLog's Postgres running locally via Docker?" returned the OLD memory `mu-a1f3c02` as the top semantic match (similarity=1.0) but it scored only **0.301 LOW** (contradiction_penalty=0.6), while the newer correct memory `mu-2c9e4f1` scored **0.801 HIGH**. This is the exact "don't blindly trust a stale-but-relevant memory" behavior the project is built around.
+  - Clean control case (N+1 bug fix, uncontradicted): scored 0.834 HIGH, confirming contradiction — not just age — is what's driving the low score above.
+- **Known limitation (being upfront, not overclaiming):** `path_length_score` returned 1.0 for every chunk in this run — `topological_rank` is 0 across the board in this small demo graph, so that signal isn't discriminating yet. It's a real API-sourced field, just not yet varying in a graph this size.
+- Wrote `recall_service/tests/test_trust_score.py` — 19 real unit tests covering all four signals independently (path length, similarity, recency, contradiction) plus combine/label logic and one integration-style test. All 19 pass (`python3 -m pytest recall_service/tests/test_trust_score.py -v`).
+
+**Next task:** Wire `consolidate/memify_job.py` (real `improve()`/`memify()` calls against `shiftlog_demo`), test specifically against the `mu-2c9e4f1` vs `mu-a1f3c02` contradiction pair to confirm Cognee's own consolidation actually merges/reweights them (as opposed to our trust-scoring layer just working around the contradiction at query time). Then `prune/forget_watcher.py` using the `mu-5f2b7c4` CSV-export deletion as the test case.
+
+**Blockers:** None. Exact hackathon submission deadline time still needs confirming from the Schedule tab (low priority until Day 3).
+
+**Notes for next session:**
+- `recall_service/verify_trust_score.py` is the pattern to reuse for showing raw before/after output on the consolidation and pruning steps too — user wants raw output shown at each sub-step, not just a summary.
+- Trust scoring signal weights (equal thirds + 0.6 contradiction penalty, 30-day recency half-life) are hardcoded constants at the top of `trust_score.py` — revisit if Day 2 demo tuning wants different behavior, but keep them simple/explainable per §7.
+
+---
+
+### Day 0 summary (COMPLETE)
+
+**Done:**
 - Scaffolded full repo structure per §5 (`ingest/`, `recall_service/`, `consolidate/`, `prune/`, `claude_code_bridge/`, `dashboard/`, `demo/`, `.env.example`), git initialized, `.venv` created, `requirements.txt` installed.
 - **Scope change (user-directed):** demo data is NOT pulled from an external repo (HireScript/TaskFlow). Instead, `demo-data/` contains hand-authored, realistic synthetic data for a fictional project "ShiftLog": `commits.jsonl` (14 commits covering decisions, bug+fix pairs, a revert/rejected-approach, a later contradicting decision, and a file deletion) plus two session transcripts (`session_001_amnesia.md` showing the pain point, `session_002_with_memory.md` showing target behavior with HIGH/LOW confidence labels — this is aspirational reference for Day 2, not yet real bridge output).
 - Built `ingest/git_reader.py` (parses `demo-data/commits.jsonl`) and `ingest/memory_units.py` (structures commits into MemoryUnit objects with provenance + cross-references). Verified via `python3 -m ingest.memory_units` — all 14 units parse correctly with references extracted (e.g. the revert and contradiction commits correctly link back to what they supersede).
