@@ -240,9 +240,13 @@ cognee-agent-memory/
 
 ## CURRENT STATUS
 
-**Last updated:** July 2, 2026, Day 2 session (in progress, sub-step 2 of 3 done)
+**Last updated:** July 2, 2026, Day 2 — COMPLETE
 
-**Stage:** Day 2 sub-steps 1–2/3 done — `claude_code_bridge` + `recall_service/api.py` + dashboard all built and verified. README not started yet.
+**Stage:** Day 2 done: `claude_code_bridge`, dashboard, and `README.md` all built and verified. Ready for Day 3 (demo video, submission polish).
+
+**Day 2 sub-step 3 (README) — done:**
+- `README.md` drafted: problem statement, ASCII architecture diagram, component table, "why synthetic demo data" explainer, the full Cognee API usage table (§3) — including the honest `improve()`/`memify()` limitation writeup as a called-out strength rather than something downplayed — trust-scoring explainer with the real verified JWT example (0.99 HIGH vs 0.28 LOW), setup instructions, and the AI Assistance Disclosure (§6).
+- Not yet done: demo video/GIF link (Day 3), blog post (optional stretch), social posts (optional stretch).
 
 **Day 2 sub-step 2 (dashboard) — done:**
 - Extended `recall_service/api.py` with `GET /timeline` (every memory unit, chronological, with a query-independent baseline trust score — similarity is neutral/1.0 since there's no active query outside a search — and live-vs-forgotten status) and `POST /forget` (manual prune by commit hash, reusing the exact `dataset_index` resolution already proven in Day 1's `forget_watcher.py`).
@@ -266,9 +270,9 @@ cognee-agent-memory/
   - `claude_code_bridge/tests/test_bridge.py` — 5 new unit tests covering the floor cutoff, top-N inclusion, and the always-surface-contradictions behavior. 24/24 tests pass project-wide (`python3 -m pytest claude_code_bridge/tests/ recall_service/tests/ -q`).
   - **Not yet done**: a genuine interactive live test where a human watches the hook fire inside an actual running Claude Code UI session (as opposed to invoking the hook script directly with the same stdin/stdout contract, which is what's verified so far). Since `.claude/settings.json` now targets this very project directory, the next real prompt in a live Claude Code session here should trigger it — worth having the user confirm this fires as expected in practice, since hook settings may only be read at session start rather than hot-reloaded.
 
-**Next task:** Draft `README.md` — problem statement, architecture diagram, Cognee API usage table (§3, including the honest improve/memify limitation writeup), setup instructions, AI Assistance Disclosure (§6).
+**Next task:** Begin Day 3 (§4) — record the demo video (2–3 min, beat sheet in §6), confirm the exact submission deadline time from the Schedule tab, final rule-compliance check (§0.1), optional blog post / social posts, submit with buffer before the deadline.
 
-**Blockers:** None. Live in-UI hook confirmation and visual dashboard check (see notes above) would be good to get from the user but aren't blocking further work.
+**Blockers:** None. Two non-blocking open items carried from Day 2: (1) live in-UI confirmation that the Claude Code hook actually fires in a real running session (verified so far via direct invocation with the identical stdin/stdout contract, not yet watched fire live); (2) a real pixel screenshot of the dashboard (verified so far via real functional/data checks, not visually — user will check this themselves). Neither blocks recording the demo video, since both code paths are proven to work correctly with real data.
 
 ---
 
