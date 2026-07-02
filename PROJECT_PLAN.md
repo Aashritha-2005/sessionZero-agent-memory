@@ -240,9 +240,38 @@ cognee-agent-memory/
 
 ## CURRENT STATUS
 
-**Last updated:** July 2, 2026, Day 2 — FULLY COMPLETE (all items confirmed, none open)
+**Last updated:** July 2, 2026, Day 3 session in progress
 
-**Stage:** Day 2 fully done, including live confirmation. Moving into Day 3 (demo video, README final pass, submission compliance).
+**Stage:** Day 2 fully complete. Day 3: demo shot list written, README accuracy pass done (two real mischaracterizations found and fixed — see below), §0.1 rule-compliance checklist run clean. Demo video recording and final deadline confirmation still open.
+
+**Day 3 progress — demo shot list + README accuracy pass + compliance check:**
+
+1. **`demo/demo_script.md`** — shot list mapped to the §6 beat sheet. Each beat explicitly tagged REAL/LIVE, REAL/CAPTURED, or ILLUSTRATIVE, so the recording never presents something as more real than it is (e.g. Beat 1's "agent forgets" cold-open is an illustrative dramatization of `demo-data/session_transcripts/session_001_amnesia.md`, not a captured session, and must be labeled as such on screen). Beats 3–4 (HIGH + LOW confidence in one live Claude Code exchange) are now backed by the actual confirmed live test, not just a plan.
+
+2. **README accuracy pass — two real mischaracterizations found and fixed, not just a re-read:**
+   - `consolidate_contradictions()` was described as "recall()+forget()-based" in both README and this file. **Actually false** — the function itself never calls `recall()`; it uses the reference graph from `memory_units.py` + a dataset listing (`dataset_index.py`) + real `forget()`. `recall()` is only used in the separate `verify_consolidation.py` script, for before/after proof, not inside the consolidation logic. Fixed in README's architecture diagram, component table, and API usage table, and in this file's Day 1 log entries.
+   - `recall_service/api.py`'s `/timeline` endpoint was implied to use `recall()` (grouped together with `/recall` in README's API usage table). **Actually false** — `/timeline` lists dataset data directly and never calls `client.recall()`. Fixed with an explicit callout in the README table.
+   - Also added two disclosures that were true but missing from README (present in this file but not carried over): the `path_length_score` known-limitation (topological_rank=0 for every result in this small graph), and a placeholder demo-video link (required by §6 checklist, was entirely absent).
+   - Re-ran `python3 -m pytest recall_service/tests/ claude_code_bridge/tests/ -q` after all edits — still 24/24 passing, confirming the fixes were docs-only.
+
+3. **§0.1 rule-compliance checklist — run against actual repo state, not assumed:**
+   - Rule 1 (Cognee as core mechanism): ✅ — entire project is built on real `remember`/`recall`/`forget` calls against Cognee Cloud; `improve`/`memify` gap is disclosed, not hidden.
+   - Rule 2 (no work before June 29): ✅ — checked via `git log` (all 16 commits dated 2026-07-02, first commit `55f79c3` is the actual project start, no gaps or backdating) and via `find ... -exec stat` (all 38 tracked files have a 2026-07-02 mtime, nothing pre-existing).
+   - Rule 3 (AI disclosure): ✅ — present in README, and accurate: only claims Claude Code (we never used Codex, so the README correctly doesn't claim it).
+   - Rule 4 (no Cognee repo PR spam): ✅ N/A — Open Source Track not attempted, zero interaction with Cognee's GitHub repo.
+   - Rule 5 (original work on allowed third-party tools): ✅ — checked `requirements.txt` (`cognee`, `fastapi`, `uvicorn`, `python-dotenv`, `pytest`, all standard pip packages, no vendored/copied code).
+   - Rule 6 (no harassment): ✅ N/A, solo team.
+   - Rule 7 (IP): ✅, solo team, no conflict.
+   - Rule 8 (job-interview framing): ✅ N/A, not applicable to this submission's messaging.
+   - Also checked: `.env` confirmed not tracked (`git ls-files` clean), no hardcoded API keys/secrets anywhere in tracked files (`git grep` for key-shaped strings returned nothing).
+
+**Next task:** Record the demo video per `demo/demo_script.md`, confirm the exact submission deadline time from the hackathon Schedule tab (still unconfirmed — do not assume end-of-day July 5), add the real video link to README, then final submit with buffer before the deadline.
+
+**Blockers:** None. Demo video recording is the last substantive task; deadline time confirmation is a quick external check, not blocked by anything in this repo.
+
+---
+
+### Day 2 summary (COMPLETE)
 
 **Day 2 closeout — live hook test PASSED (user-confirmed 2026-07-02):** the last open item from Day 2 — a human watching the `UserPromptSubmit` hook fire inside an actual running Claude Code UI session, as opposed to invoking it directly with the same stdin/stdout contract — is now done. In a fresh Claude Code session on this project, the hook fired for real and injected both the LOW-confidence superseded JWT memory (`mu-d5b6e13`) and the HIGH-confidence current session-cookie memory (`mu-8c5f0d7`); Claude Code synthesized the correct current-state answer citing both commit hashes rather than picking one blindly. This is the exact "wow moment" the plan's §6 demo beat sheet calls for (beat 3 and 4 — HIGH correctly trusted, LOW correctly flagged instead of blindly trusted), now proven live end-to-end, not just via direct script invocation. No code changes were needed — the hook worked as built.
 
