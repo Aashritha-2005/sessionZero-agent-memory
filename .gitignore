@@ -5,4 +5,7 @@ __pycache__/
 venv/
 node_modules/
 .DS_Store
-.claude/
+# Harness/session state — not project config. .claude/settings.json (hook
+# wiring for claude_code_bridge) IS tracked; only local runtime state is not.
+.claude/scheduled_tasks.lock
+.claude/*.lock

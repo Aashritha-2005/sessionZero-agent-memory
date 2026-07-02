@@ -14,9 +14,15 @@ from datetime import datetime
 
 from ingest.git_reader import Commit, read_commits
 
-# Matches short git-style hashes (7 hex chars) referenced inside commit
-# messages, e.g. "This reverts commit 9f1a220." or "Supersedes ... a1f3c02".
-_HASH_REF_RE = re.compile(r"\b[0-9a-f]{7}\b")
+# Matches short git-style hashes (7 hex chars) *only when introduced by an
+# explicit supersession phrase* — "reverts commit X", "Supersedes ... X",
+# "changed from X" — so an incidental hash mention elsewhere in the prose
+# (e.g. "not repeating the X mistake") isn't misread as a real reference.
+_HASH_REF_RE = re.compile(
+    r"(?:reverts commit|supersedes(?:[^.\n]*?(?:from|the))?|changed from)\s+"
+    r"(?:the\s+)?(?:[a-z0-9_./-]*\s+)?(?:from\s+)?([0-9a-f]{7})\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
