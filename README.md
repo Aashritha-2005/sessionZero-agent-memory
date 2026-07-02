@@ -155,6 +155,12 @@ Built with assistance from **Claude Code** for implementation — including the 
 
 ---
 
+## Known limitations
+
+- During development, one memory unit was observed to disappear from the live Cognee Cloud dataset without any explicit `forget()` call in our session history — cause unconfirmed (possibly server-side dedup/pruning behavior we don't have visibility into). It was successfully re-ingested. We're disclosing this as an open question about hosted-tenant data persistence, not something we've solved.
+
+---
+
 ## Non-negotiables this project followed
 
 - No mocked Cognee calls — every `remember()`/`recall()`/`forget()` claim in this README is backed by a real API call, verified with raw output (see `PROJECT_PLAN.md`'s `CURRENT STATUS` log for the full trail).
