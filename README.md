@@ -64,9 +64,19 @@ demo-data/commits.jsonl (synthetic-but-realistic commit history)
 | `recall_service/` | `trust_score.py` — the four-signal scoring function; `api.py` — FastAPI `/recall`, `/timeline`, `/forget` |
 | `consolidate/` | `memify_job.py` — consolidation, reframed to reference-graph analysis + real `forget()`, verified via before/after `recall()` (see below) |
 | `prune/` | `forget_watcher.py` — detects deleted/superseded memories, calls real `forget()` |
-| `claude_code_bridge/` | `bridge.py` — a real Claude Code `UserPromptSubmit` hook that injects trust-labeled recall context before the agent responds. Confirmed working in a live Claude Code session, not just via direct script invocation — asking *"Does ShiftLog use JWT for authentication?"* correctly surfaced both the HIGH-confidence current decision and the LOW-confidence superseded one, and Claude Code's answer cited both. |
+| `claude_code_bridge/` | `bridge.py` — a real Claude Code `UserPromptSubmit` hook that injects trust-labeled recall context before the agent responds. Confirmed working in a live Claude Code session, not just via direct script invocation — asking *"Does ShiftLog use JWT for authentication?"* correctly surfaced both the HIGH-confidence current decision and the LOW-confidence superseded one, and Claude Code's answer cited both. `codex_bridge.py` — a second, independent hook for Codex, proving the underlying service is agent-agnostic (see "Beyond Claude Code" below). |
 | `dashboard/` | `index.html` — single-page timeline UI, no build step |
 | `demo-data/` | Synthetic-but-realistic commit history + session transcripts for a fictional project ("ShiftLog"), generated for this demo rather than pulled from a real external repo |
+
+---
+
+## Beyond Claude Code
+
+The core of this system isn't "a Claude Code plugin" — it's `recall_service/api.py`, a plain HTTP service exposing trust-scored recall. `claude_code_bridge/bridge.py` is *one* integration on top of it. Any agent that can make an HTTP request and read a JSON response can use the exact same trust-calibrated memory.
+
+We didn't just assert this — we built a second, independent bridge to prove it. `claude_code_bridge/codex_bridge.py` implements Codex's real `UserPromptSubmit` hook contract (verified by reading Cognee's own shipped Codex plugin source on GitHub — turns out Codex's hook wire format is byte-identical to Claude Code's: same stdin `{"prompt": "..."}`, same stdout `{"hookSpecificOutput": {...}}`) and talks to `recall_service/api.py`'s `/recall` endpoint purely over HTTP — it doesn't import anything from `bridge.py`, exactly as a genuinely separate agent process would have to.
+
+**Honesty check, same standard as the rest of this project:** `codex_bridge.py` is verified two ways — structurally, against Cognee's real Codex plugin source (not guessed), and functionally, with a real HTTP call against the live `recall_service` that returns correct HIGH/LOW confidence results. It has **not** been run inside an actual Codex CLI session — that would require installing Codex and the full `codex plugin marketplace add ...` flow, which was out of scope for the time left before the deadline. Don't read this as "Codex integration, fully live-tested" — read it as "the agent-agnostic architecture claim, backed by a real second client hitting the real service, one honest step short of a live Codex session."
 
 ---
 
