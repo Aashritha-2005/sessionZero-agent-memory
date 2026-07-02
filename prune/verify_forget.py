@@ -1,16 +1,15 @@
-"""Verification: does the reframed recall()+forget() consolidation
-actually remove the superseded mu-a1f3c02 (local Docker Postgres)
-memory from the graph, now that it's contradicted by mu-2c9e4f1
-(Railway Postgres)? Captures real recall() output before and after."""
+"""Verification: prune_deleted_files() should remove the mu-5f2b7c4
+(legacy CSV export removal) memory from the graph. Real before/after
+recall() snapshots, same pattern as consolidate/verify_consolidation.py."""
 
 from __future__ import annotations
 
 import json
 
-from consolidate.memify_job import consolidate_contradictions
 from ingest.remember_client import DATASET_NAME, _client
+from prune.forget_watcher import prune_deleted_files
 
-QUERY = "Is ShiftLog's Postgres running locally via Docker?"
+QUERY = "Does ShiftLog have a CSV export feature?"
 
 
 def snapshot(label: str) -> list[dict]:
@@ -33,9 +32,11 @@ def snapshot(label: str) -> list[dict]:
 def main():
     before = snapshot("BEFORE forget()")
 
-    print("\n--- running real consolidate_contradictions() (forget on superseded commits) ---")
-    result = consolidate_contradictions()
-    print(json.dumps(result, indent=2, default=str))
+    print("\n--- running real prune_deleted_files() ---")
+    from dataclasses import asdict
+
+    log = prune_deleted_files()
+    print(json.dumps([asdict(e) for e in log], indent=2, default=str))
 
     after = snapshot("AFTER forget()")
 
