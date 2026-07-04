@@ -3,7 +3,7 @@
 **Trust-calibrated memory for AI coding agents.**
 Built for *The Hangover Part AI: Where's My Context?* (WeMakeDevs x Cognee hackathon, June 29 – July 5, 2026).
 
-**🔗 Live deployment:** _[to be added — Railway deploy in progress]_
+**🔗 Live deployment:** [web-production-67f7f.up.railway.app](https://web-production-67f7f.up.railway.app) — real Cognee Cloud dataset, deployed on Railway. Try `/timeline`, `/recall?query=...`, `/health`.
 **🎥 Demo video:** _[to be added — recording in progress, see `demo/demo_script.md` for the shot list]_
 
 > Every new AI coding agent session starts with total amnesia. You explain the same architecture decision three times. The agent forgets why you rejected an approach last week and suggests it again. Worse — if you *do* bolt memory onto an agent, a wrong or stale memory gets injected with the same confidence as a correct one, and the agent confidently repeats an old mistake.
