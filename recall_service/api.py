@@ -1,13 +1,17 @@
 """FastAPI wrapper exposing trust-scored recall over HTTP.
 
-GET  /health   — passthrough to the real Cognee Cloud tenant's health check.
-GET  /recall   — real Cognee CHUNKS recall, trust-scored, for a query.
-GET  /timeline — every ingested memory, chronological, with a
-                  query-independent baseline trust score for the
-                  dashboard's confidence color-coding, and whether it's
-                  still live in the graph or already forgotten.
-POST /forget   — real forget() on a memory unit by commit hash, for the
-                  dashboard's manual "forget this" button.
+GET  /health     — passthrough to the real Cognee Cloud tenant's health check.
+GET  /recall     — real Cognee CHUNKS recall, trust-scored, for a query.
+GET  /summaries  — real Cognee SUMMARIES search — condensed bullet-point
+                    summaries of matching memories, not scored (see its
+                    own docstring for why it deliberately doesn't touch
+                    trust_score.py).
+GET  /timeline   — every ingested memory, chronological, with a
+                    query-independent baseline trust score for the
+                    dashboard's confidence color-coding, and whether it's
+                    still live in the graph or already forgotten.
+POST /forget     — real forget() on a memory unit by commit hash, for the
+                    dashboard's manual "forget this" button.
 
 This is what claude_code_bridge/bridge.py calls before a coding task, and
 what the dashboard calls to browse memories/provenance/prune.
@@ -15,6 +19,7 @@ what the dashboard calls to browse memories/provenance/prune.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
@@ -36,6 +41,20 @@ from recall_service.trust_score import (
 )
 
 DASHBOARD_DIR = Path(__file__).resolve().parent.parent / "dashboard"
+
+# Scoped to this endpoint only, deliberately not reused from trust_score.py's
+# extract_commit_hash(): that one requires the exact "Commit: <hash> (<ts>)"
+# format we embed in our own memory bodies, but Cognee's SUMMARIES output is
+# free-form prose that mentions hashes loosely (e.g. "commit 2c9e4f1 on
+# 2026-06-10..."). A bare 7-hex-char match is low-stakes here — worst case
+# is a wrong-but-plausible commit shown next to a summary, not a scoring or
+# pruning decision — so it doesn't need trust_score.py's stricter guard.
+_LOOSE_HASH_RE = re.compile(r"\b[0-9a-f]{7}\b")
+
+
+def _loose_commit_hash(text: str) -> str | None:
+    m = _LOOSE_HASH_RE.search(text)
+    return m.group(0) if m else None
 
 app = FastAPI(title="cognee-agent-memory recall_service")
 app.add_middleware(
@@ -82,6 +101,37 @@ def recall(query: str = Query(...), top_k: int = Query(10, ge=1, le=50)):
     results = score_chunks(chunks, top_k=top_k)
     results.sort(key=lambda r: r.score, reverse=True)
     return {"query": query, "results": [_result_to_dict(r) for r in results]}
+
+
+@app.get("/summaries")
+def summaries(query: str = Query(...), top_k: int = Query(5, ge=1, le=20)):
+    """Real Cognee `SUMMARIES` search — condensed, bullet-point summaries
+    of matching memories, genuinely different output from CHUNKS (raw
+    text) or the GRAPH_COMPLETION style answer /recall's trust-scoring
+    is built on.
+
+    Deliberately NOT trust-scored: SUMMARIES results don't carry the
+    same per-chunk `topological_rank`/ranked-list shape score_chunks()
+    expects, and retrofitting trust_score.py to score a different
+    result shape would mean touching its already-verified logic — out
+    of scope for this addition. Returned as plain real Cognee output
+    with basic provenance (source commit, if extractable) so the
+    dashboard can show it without implying a confidence label that
+    isn't real.
+    """
+    with _client() as client:
+        results = client.recall(
+            query=query,
+            search_type="SUMMARIES",
+            datasets=[DATASET_NAME],
+            top_k=top_k,
+        )
+    out = []
+    for r in results:
+        text = r.get("text", "")
+        commit = _loose_commit_hash(text)
+        out.append({"text": text, "source_commit": commit})
+    return {"query": query, "results": out}
 
 
 @app.get("/timeline")

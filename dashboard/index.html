@@ -487,12 +487,14 @@
         <div class="controls">
           <input type="text" id="query" placeholder="Search recall (e.g. 'Does ShiftLog use JWT?')" />
           <button onclick="runRecall()">Recall</button>
+          <button onclick="runSummaries()">Summaries</button>
         </div>
         <div class="legend">
           <span><span class="dot" style="background:var(--high)"></span>HIGH confidence</span>
           <span><span class="dot" style="background:var(--medium)"></span>MEDIUM confidence</span>
           <span><span class="dot" style="background:var(--low)"></span>LOW — verify before trusting</span>
         </div>
+        <p class="meta" style="font-style:italic;">"Summaries" uses Cognee's real SUMMARIES search — condensed bullet-point recaps, shown as-is and deliberately not trust-scored (see README).</p>
         <div id="search-status" class="meta"></div>
         <div id="search-list"></div>
       </section>
@@ -621,6 +623,34 @@ async function runRecall() {
   list.innerHTML = "";
   appendWithStagger(list, data.results.map(e => renderItem(e, true)));
   setSearchStatus(`${data.results.length} result(s) for "${q}"`);
+}
+
+// Additive: real Cognee SUMMARIES search, deliberately NOT trust-scored
+// (see /summaries endpoint's docstring in recall_service/api.py) — so
+// this renders plain cards, not renderItem()'s confidence-badged ones.
+function renderSummaryCard(r) {
+  const row = document.createElement("div");
+  row.className = "tl-row";
+  const div = document.createElement("div");
+  div.className = "timeline-item";
+  div.innerHTML = `
+    <div class="meta" style="margin-top:0;">${r.source_commit ? `commit <code>${r.source_commit}</code>` : "commit not identified in summary text"}</div>
+    <div style="margin-top:8px; white-space:pre-line;">${r.text}</div>
+  `;
+  row.appendChild(div);
+  return row;
+}
+
+async function runSummaries() {
+  const q = document.getElementById("query").value.trim();
+  const list = document.getElementById("search-list");
+  if (!q) { setSearchStatus("Enter a query to search summaries."); list.innerHTML = ""; return; }
+  setSearchStatus(`Querying real Cognee SUMMARIES for: "${q}"…`);
+  const res = await fetch(`${API_BASE}/summaries?query=${encodeURIComponent(q)}&top_k=5`);
+  const data = await res.json();
+  list.innerHTML = "";
+  appendWithStagger(list, data.results.map(renderSummaryCard));
+  setSearchStatus(`${data.results.length} summary/summaries for "${q}" (not trust-scored)`);
 }
 
 async function forgetMemory(commit, btn) {
