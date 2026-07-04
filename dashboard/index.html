@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>cognee-agent-memory — Timeline</title>
+<title>SessionZero — Trust-weighted memory for AI coding agents</title>
 <style>
   :root {
     --high: #1e8e3e;
@@ -16,55 +16,229 @@
     --muted: #9aa0a6;
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--bg);
+    font-family: "Times New Roman", Times, serif;
+    font-size: 19px;
+    background:
+      radial-gradient(ellipse at top left, rgba(47,111,235,0.05), transparent 55%),
+      linear-gradient(135deg, #0a0b0e 0%, #0f1115 45%, #0c1120 100%);
+    background-attachment: fixed;
     color: var(--text);
+    scroll-behavior: smooth;
   }
-  header {
-    padding: 20px 28px;
+
+  /* ---------------- Intro splash ---------------- */
+  .intro-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    cursor: pointer;
+    transition: opacity 400ms ease;
+  }
+  .intro-overlay.intro-hide { opacity: 0; pointer-events: none; }
+  .intro-overlay { flex-direction: column; }
+  .intro-title-row { display: block; text-align: center; }
+  .intro-word {
+    font-size: 96px;
+    font-weight: 700;
+    opacity: 0;
+    animation: introWordIn 500ms ease forwards;
+  }
+  .intro-session { animation-delay: 0ms; }
+  .intro-zero { color: #3b78f0; animation-delay: 450ms; }
+  @keyframes introWordIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .intro-rule {
+    width: 160px;
+    height: 1px;
+    background: var(--border);
+    margin: 22px auto 18px;
+    opacity: 0;
+    animation: introFadeIn 500ms ease forwards;
+    animation-delay: 850ms;
+  }
+  .intro-caption {
+    text-align: center;
+    font-style: italic;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-size: 15px;
+    color: var(--muted);
+    opacity: 0;
+    animation: introFadeIn 500ms ease forwards;
+    animation-delay: 950ms;
+  }
+  @keyframes introFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* ---------------- Top bar: full-width, sits above the sidebar+main row ---------------- */
+  nav.topbar {
+    height: 112px;
+    padding: 0 36px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
     gap: 12px;
+    background: linear-gradient(180deg, rgba(23,26,33,0.6), rgba(15,17,21,0.3));
+    backdrop-filter: blur(6px);
   }
-  header h1 { font-size: 18px; margin: 0; }
-  header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
-  .controls {
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo-mark { flex-shrink: 0; display: block; }
+  .brand .wordmark {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin: 0;
+    line-height: 1.1;
+  }
+  .brand .tagline {
+    font-style: italic;
+    font-size: 15px;
+    color: var(--muted);
+    margin: 4px 0 0;
+  }
+  .about-link {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 19px;
+    cursor: pointer;
+    padding: 10px 18px;
+    border-radius: 6px;
+    transition: color 200ms ease, background-color 200ms ease;
+  }
+  .about-link:hover, .about-link.active { color: var(--text); background: rgba(255,255,255,0.04); }
+
+  /* ---------------- Shell layout: sidebar + content, below the top bar ---------------- */
+  .app-shell { display: flex; min-height: calc(100vh - 112px); }
+
+  .sidebar {
+    width: 420px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    padding: 28px 26px;
     display: flex;
-    gap: 8px;
-    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+    background: linear-gradient(180deg, rgba(23,26,33,0.5), rgba(15,17,21,0.2));
+    overflow-y: auto;
   }
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 16px;
+    border-radius: 8px;
+    font-size: 21px;
+    color: var(--muted);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    text-align: left;
+    width: 100%;
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+  .sidebar-nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  .sidebar-nav-item.active { color: var(--text); background: rgba(47,111,235,0.14); }
+  .sidebar-nav-item svg { width: 22px; height: 22px; flex-shrink: 0; }
+  .sidebar-about {
+    margin-top: 22px;
+    padding: 20px;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .sidebar-about .about-lead {
+    font-style: italic;
+    margin: 0 0 14px;
+  }
+  .sidebar-section-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text);
+    margin: 18px 0 10px;
+  }
+  .sidebar-about ul {
+    margin: 0;
+    padding-left: 18px;
+    list-style: disc;
+  }
+  .sidebar-about li {
+    margin-bottom: 12px;
+  }
+  .sidebar-about li:last-child { margin-bottom: 0; }
+  .sidebar-about b { color: var(--text); font-weight: 700; }
+
+  .content-area { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .tab-panel { display: none; animation: panelFade 320ms ease; }
+  .tab-panel.active { display: block; }
+  @keyframes panelFade {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  main { padding: 32px 36px 64px; max-width: 900px; }
+
+  h2.section-header { font-size: 23px; font-weight: 700; margin: 0 0 18px; }
+
+  .controls { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
   input[type=text] {
     background: var(--card);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: 8px 12px;
-    border-radius: 6px;
-    width: 320px;
-    font-size: 13px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    width: 360px;
+    min-height: 48px;
+    font-family: inherit;
+    font-size: 16px;
   }
   button {
-    background: #2f6feb;
+    background: linear-gradient(180deg, #3b78f0, #2a5fd0);
     color: white;
     border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
+    padding: 18px 30px;
+    min-height: 52px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 13px;
+    font-family: inherit;
+    font-size: 22px;
+    box-shadow: 0 4px 12px rgba(47,111,235,0.28);
+    transform: translateY(0);
+    transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
   }
-  button.danger { background: var(--low); }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  main { padding: 24px 28px; max-width: 980px; margin: 0 auto; }
-  .legend { display: flex; gap: 18px; margin-bottom: 18px; font-size: 12px; color: var(--muted); }
-  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+  button:hover { transform: scale(1.03) translateY(-1px); box-shadow: 0 6px 18px rgba(47,111,235,0.4); filter: brightness(1.05); }
+  button:active { transform: translateY(1px) scale(0.99); box-shadow: 0 2px 6px rgba(47,111,235,0.25); }
+  button.danger {
+    background: linear-gradient(180deg, #d33a35, #a8221f);
+    box-shadow: 0 4px 12px rgba(197,34,31,0.28);
+  }
+  button.danger:hover { box-shadow: 0 6px 18px rgba(197,34,31,0.42); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-  /* Timeline rail: a vertical connecting line threading through every
-     entry's marker dot, so the page reads as chronological memory
-     rather than a generic list of cards. */
+  .legend { display: flex; gap: 28px; margin-bottom: 20px; font-size: 14px; font-style: italic; color: var(--muted); flex-wrap: wrap; }
+  .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+
+  /* ---------------- Timeline rail ---------------- */
   #list { position: relative; }
   #list::before {
     content: "";
@@ -74,17 +248,45 @@
     bottom: 10px;
     width: 2px;
     background: var(--border);
+    transform-origin: top;
+    animation: railDraw 900ms ease forwards;
   }
-  .tl-row { position: relative; padding-left: 34px; margin-bottom: 16px; }
+  @keyframes railDraw {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+
+  /* .tl-row's default state is fully visible; the fade-in is opt-in via
+     the temporary .entering class, so an interrupted animation degrades
+     to "visible" rather than "stuck invisible". */
+  .tl-row {
+    position: relative;
+    padding-left: 34px;
+    margin-bottom: 22px;
+  }
+  .tl-row.entering {
+    opacity: 0;
+    animation: cardIn 420ms ease forwards;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   .tl-dot {
     position: absolute;
     left: 4px;
-    top: 22px;
+    top: 26px;
     width: 12px;
     height: 12px;
     border-radius: 50%;
     border: 2px solid var(--bg);
     z-index: 1;
+    animation: dotPulseOnce 700ms ease-out;
+  }
+  @keyframes dotPulseOnce {
+    0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.35); }
+    70% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
   }
   .tl-dot.HIGH { background: var(--high); }
   .tl-dot.MEDIUM { background: var(--medium); }
@@ -92,84 +294,220 @@
   .tl-dot.forgotten { background: var(--forgotten); }
 
   .timeline-item {
-    background: var(--card);
+    background: linear-gradient(180deg, #1b1f28, var(--card));
     border: 1px solid var(--border);
     border-left: 4px solid var(--border);
-    border-radius: 8px;
-    padding: 16px 18px;
-    transition: opacity 0.2s;
+    border-radius: 10px;
+    padding: 28px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.28);
+    transition: opacity 0.2s, transform 220ms ease, box-shadow 220ms ease;
+  }
+  .timeline-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.45), 0 14px 32px rgba(0,0,0,0.36);
   }
   .timeline-item.forgotten { opacity: 0.5; }
   .timeline-item.HIGH { border-left-color: var(--high); }
   .timeline-item.MEDIUM { border-left-color: var(--medium); }
   .timeline-item.LOW {
     border-left-color: var(--low);
-    background: linear-gradient(rgba(197,34,31,0.10), rgba(197,34,31,0.10)), var(--card);
+    background: linear-gradient(rgba(197,34,31,0.10), rgba(197,34,31,0.10)), linear-gradient(180deg, #1b1f28, var(--card));
   }
-  .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-  .title { font-size: 17px; font-weight: 700; line-height: 1.3; }
-  .title.forgotten-title { text-decoration: line-through; text-decoration-color: var(--forgotten); text-decoration-thickness: 2px; color: var(--muted); font-weight: 500; }
-  .warn-icon { margin-right: 6px; }
-  .meta { color: var(--muted); font-size: 11px; margin-top: 6px; letter-spacing: 0.2px; }
+  .timeline-item.flash-HIGH { animation: flashHigh 500ms ease; }
+  .timeline-item.flash-MEDIUM { animation: flashMedium 500ms ease; }
+  .timeline-item.flash-LOW { animation: flashLow 500ms ease; }
+  @keyframes flashHigh { 30% { box-shadow: 0 0 0 6px rgba(30,142,62,0.45); } }
+  @keyframes flashMedium { 30% { box-shadow: 0 0 0 6px rgba(181,129,5,0.45); } }
+  @keyframes flashLow { 30% { box-shadow: 0 0 0 6px rgba(197,34,31,0.45); } }
+
+  .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .title { font-size: 26px; font-weight: 700; line-height: 1.3; }
+  .title.forgotten-title { text-decoration: line-through; text-decoration-color: var(--forgotten); text-decoration-thickness: 2px; color: var(--muted); font-weight: 500; font-style: italic; }
+  .warn-icon { margin-right: 8px; }
+  .meta { color: var(--muted); font-size: 20px; margin-top: 8px; letter-spacing: 0.2px; font-style: italic; }
   .supersedes {
     display: inline-block;
-    margin-top: 8px;
-    font-size: 11px;
-    padding: 2px 8px;
+    margin-top: 10px;
+    font-size: 16px;
+    padding: 4px 12px;
     border-radius: 10px;
     background: rgba(138,180,248,0.14);
     color: #8ab4f8;
+    font-style: italic;
   }
-  .supersedes code { color: inherit; }
+  .supersedes code { color: inherit; font-style: normal; }
   .badge {
-    font-size: 11px;
+    font-size: 20px;
     font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 10px;
+    padding: 16px 22px;
+    border-radius: 16px;
     white-space: nowrap;
+    display: inline-block;
   }
   .badge.HIGH { background: rgba(30,142,62,0.18); color: var(--high); }
   .badge.MEDIUM { background: rgba(181,129,5,0.18); color: var(--medium); }
-  .badge.LOW { background: rgba(197,34,31,0.18); color: var(--low); }
-  .badge.forgotten { background: rgba(154,160,168,0.18); color: var(--forgotten); }
-  .provenance {
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px dashed var(--border);
-    font-size: 12px;
-    color: var(--muted);
-    display: none;
+  .badge.LOW { background: rgba(197,34,31,0.18); color: var(--low); animation: badgeAttn 1.8s ease-in-out infinite; }
+  .badge.forgotten { background: rgba(154,160,168,0.18); color: var(--forgotten); animation: badgeAttn 1.8s ease-in-out infinite; }
+  @keyframes badgeAttn {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(197,34,31,0.0); }
+    50% { box-shadow: 0 0 0 5px rgba(197,34,31,0.12); }
   }
-  .provenance.open { display: block; }
-  .provenance code { color: #8ab4f8; }
-  .signals span { margin-right: 12px; }
-  .actions { display: flex; gap: 8px; margin-top: 10px; }
-  .actions button { font-size: 11px; padding: 4px 10px; }
+
+  /* Provenance now expands via max-height transition instead of a
+     display:none/block snap, plus the click handler adds a brief
+     confidence-colored flash on the card border. Pure animation polish
+     — the toggle logic (open/closed state, what data is shown) is
+     unchanged. */
+  .provenance {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding-top: 0;
+    border-top: 1px solid transparent;
+    font-size: 16px;
+    color: var(--muted);
+    transition: max-height 320ms ease, opacity 280ms ease, padding-top 320ms ease, border-color 320ms ease;
+  }
+  .provenance.open {
+    max-height: 600px;
+    opacity: 1;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+  .provenance code { color: #8ab4f8; font-style: normal; }
+  .signals span { margin-right: 16px; font-style: italic; }
+  .actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .actions button { font-size: 21px; padding: 18px 28px; min-height: 52px; }
   .warn { color: var(--low); font-weight: 600; }
+
+  .about-panel {
+    background: linear-gradient(180deg, #1b1f28, var(--card));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.28);
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .about-panel h3 { font-size: 20px; margin-top: 0; }
+  .about-panel .hint { font-style: italic; color: var(--muted); font-size: 14px; }
 </style>
 </head>
 <body>
-<header>
-  <div>
-    <h1>cognee-agent-memory — Memory Timeline</h1>
-    <p>Real Cognee Cloud data, dataset <code id="dsname">shiftlog_demo</code></p>
+<div id="intro" class="intro-overlay">
+  <div class="intro-title-row">
+    <span class="intro-word intro-session">Session</span><span class="intro-word intro-zero">Zero</span>
   </div>
-  <div class="controls">
-    <input type="text" id="query" placeholder="Search recall (e.g. 'Does ShiftLog use JWT?')" />
-    <button onclick="runRecall()">Recall</button>
-    <button onclick="loadTimeline()">Refresh timeline</button>
+  <div class="intro-rule"></div>
+  <div class="intro-caption">Trust-weighted memory for AI coding agents</div>
+</div>
+
+<nav class="topbar">
+  <div class="brand">
+    <span class="logo-mark">
+      <svg width="44" height="44" viewBox="0 0 44 44">
+        <defs>
+          <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1e8e3e"/>
+            <stop offset="50%" stop-color="#b58105"/>
+            <stop offset="100%" stop-color="#c5221f"/>
+          </linearGradient>
+        </defs>
+        <circle cx="22" cy="22" r="20" fill="#171a21" stroke="url(#logoGrad)" stroke-width="2.5"/>
+        <text x="22" y="30" text-anchor="middle" font-family="Times New Roman, serif" font-size="22" font-weight="700" fill="#e8eaed">S</text>
+      </svg>
+    </span>
+    <div>
+      <p class="wordmark">SessionZero</p>
+      <p class="tagline">Trust-weighted memory for AI coding agents</p>
+    </div>
   </div>
-</header>
-<main>
-  <div class="legend">
-    <span><span class="dot" style="background:var(--high)"></span>HIGH confidence</span>
-    <span><span class="dot" style="background:var(--medium)"></span>MEDIUM confidence</span>
-    <span><span class="dot" style="background:var(--low)"></span>LOW — verify before trusting</span>
-    <span><span class="dot" style="background:var(--forgotten)"></span>forgotten (pruned)</span>
+  <button class="about-link" data-tab="about" onclick="switchTab('about')">About</button>
+</nav>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <button class="sidebar-nav-item active" data-tab="timeline" onclick="switchTab('timeline')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="13" y2="18"/></svg>
+      Timeline
+    </button>
+    <button class="sidebar-nav-item" data-tab="search" onclick="switchTab('search')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Search
+    </button>
+    <div class="sidebar-about">
+      <p class="about-lead"><b>SessionZero</b> is a trust-calibrated memory layer for AI coding agents, built on Cognee's real knowledge-graph lifecycle.</p>
+
+      <div class="sidebar-section-label">Pipeline · how it works</div>
+      <ul>
+        <li><b>Ingest</b> — commit history and decisions are structured into memory units and written to the graph via Cognee's real <b>remember()</b>.</li>
+        <li><b>Recall</b> — a query hits Cognee's live graph via <b>recall()</b>, returning ranked, semantically relevant memories.</li>
+        <li><b>Trust score</b> — every recalled memory is scored on 4 signals before it reaches the agent.</li>
+        <li><b>Inject or flag</b> — HIGH confidence is trusted; LOW confidence is surfaced with a warning, never silently believed.</li>
+        <li><b>Prune</b> — stale or superseded memories are removed from the graph via real <b>forget()</b>.</li>
+      </ul>
+
+      <div class="sidebar-section-label">Trust signals</div>
+      <ul>
+        <li><b>Path</b> — how directly connected the memory is in the knowledge graph.</li>
+        <li><b>Similarity</b> — semantic relevance to the query.</li>
+        <li><b>Recency</b> — exponential decay from the memory's source-commit timestamp.</li>
+        <li><b>Contradiction</b> — a newer memory explicitly supersedes this one.</li>
+      </ul>
+
+      <div class="sidebar-section-label">This demo</div>
+      <ul>
+        <li>Runs against a <b>real</b> ingested Cognee Cloud dataset (<code>shiftlog_demo</code>) — not mocked data.</li>
+        <li>Every card below reflects a <b>live</b> query, not a static screenshot.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <div class="content-area">
+    <main>
+      <section id="tab-timeline" class="tab-panel active">
+        <h2 class="section-header">Memory Timeline</h2>
+        <div class="controls">
+          <button onclick="loadTimeline()">Refresh timeline</button>
+          <span class="meta">dataset <code id="dsname">shiftlog_demo</code></span>
+        </div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--high)"></span>HIGH confidence</span>
+          <span><span class="dot" style="background:var(--medium)"></span>MEDIUM confidence</span>
+          <span><span class="dot" style="background:var(--low)"></span>LOW — verify before trusting</span>
+          <span><span class="dot" style="background:var(--forgotten)"></span>forgotten (pruned)</span>
+        </div>
+        <div id="status" class="meta"></div>
+        <div id="list"></div>
+      </section>
+
+      <section id="tab-search" class="tab-panel">
+        <h2 class="section-header">Search Recall</h2>
+        <div class="controls">
+          <input type="text" id="query" placeholder="Search recall (e.g. 'Does ShiftLog use JWT?')" />
+          <button onclick="runRecall()">Recall</button>
+        </div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--high)"></span>HIGH confidence</span>
+          <span><span class="dot" style="background:var(--medium)"></span>MEDIUM confidence</span>
+          <span><span class="dot" style="background:var(--low)"></span>LOW — verify before trusting</span>
+        </div>
+        <div id="search-status" class="meta"></div>
+        <div id="search-list"></div>
+      </section>
+
+      <section id="tab-about" class="tab-panel">
+        <div class="about-panel">
+          <h3>SessionZero</h3>
+          <p>Trust-weighted memory for AI coding agents, built on Cognee's knowledge-graph memory lifecycle. Every recalled memory is scored on path length, semantic similarity, recency, and contradiction with newer knowledge — then labeled HIGH, MEDIUM, or LOW confidence before it ever reaches the agent.</p>
+          <p>A stale or contradicted memory isn't silently dropped or silently trusted — it's surfaced with a visible warning, so the human or the agent can decide.</p>
+          <p class="hint">See the project README for the full architecture, Cognee API usage, and known limitations.</p>
+        </div>
+      </section>
+    </main>
   </div>
-  <div id="status" class="meta"></div>
-  <div id="list"></div>
-</main>
+</div>
 
 <script>
 const API_BASE = "http://127.0.0.1:8000";
@@ -217,17 +555,22 @@ function renderItem(e, isRecallResult) {
       ${e.files ? `<div>files: ${e.files.join(", ")}</div>` : ""}
       ${e.superseded_by && e.superseded_by.length ? `<div class="warn">superseded by: ${e.superseded_by.join(", ")}</div>` : ""}
       ${e.data_id ? `<div>data_id: <code>${e.data_id}</code></div>` : ""}
-      <div class="actions">
-        <button onclick='toggleProv(this)'>hide provenance</button>
-        ${!forgotten && !isRecallResult ? `<button class="danger" onclick="forgetMemory('${e.source_commit}', this)">forget this</button>` : ""}
-      </div>
+      ${!forgotten && !isRecallResult ? `<div class="actions"><button class="danger" onclick="forgetMemory('${e.source_commit}', this)">forget this</button></div>` : ""}
     </div>
   `;
 
+  // Click handler: unchanged toggle logic (same .open class, same data
+  // shown) — only the visual treatment (flash) is new, and it's a pure
+  // CSS class add/remove with no effect on state or data.
   div.addEventListener("click", (ev) => {
     if (ev.target.tagName === "BUTTON") return;
     const prov = div.querySelector(".provenance");
     prov.classList.toggle("open");
+    const flashClass = `flash-${level}`;
+    div.classList.remove(flashClass);
+    void div.offsetWidth; // restart animation if clicked repeatedly
+    div.classList.add(flashClass);
+    setTimeout(() => div.classList.remove(flashClass), 500);
   });
 
   const marker = document.createElement("div");
@@ -238,9 +581,18 @@ function renderItem(e, isRecallResult) {
   return row;
 }
 
-function toggleProv(btn) {
-  const prov = btn.closest(".provenance");
-  prov.classList.remove("open");
+// Presentational only: staggers each row's fade-in animation so the
+// timeline visibly "populates" rather than snapping in all at once.
+// Row's base (no-class) style is fully opaque; ".entering" is added just
+// before insertion and removed once its animation finishes, so an
+// interrupted animation never leaves a row stuck invisible.
+function appendWithStagger(container, rows) {
+  rows.forEach((row, i) => {
+    row.classList.add("entering");
+    row.style.animationDelay = `${i * 50}ms`;
+    row.addEventListener("animationend", () => row.classList.remove("entering"), { once: true });
+    container.appendChild(row);
+  });
 }
 
 async function loadTimeline() {
@@ -250,20 +602,20 @@ async function loadTimeline() {
   document.getElementById("dsname").textContent = data.dataset;
   const list = document.getElementById("list");
   list.innerHTML = "";
-  data.entries.forEach(e => list.appendChild(renderItem(e, false)));
+  appendWithStagger(list, data.entries.map(e => renderItem(e, false)));
   setStatus(`${data.count} memories · dataset "${data.dataset}"`);
 }
 
 async function runRecall() {
   const q = document.getElementById("query").value.trim();
-  if (!q) return loadTimeline();
-  setStatus(`Querying recall_service for: "${q}"…`);
+  const list = document.getElementById("search-list");
+  if (!q) { setSearchStatus("Enter a query to search recall."); list.innerHTML = ""; return; }
+  setSearchStatus(`Querying recall_service for: "${q}"…`);
   const res = await fetch(`${API_BASE}/recall?query=${encodeURIComponent(q)}&top_k=10`);
   const data = await res.json();
-  const list = document.getElementById("list");
   list.innerHTML = "";
-  data.results.forEach(e => list.appendChild(renderItem(e, true)));
-  setStatus(`${data.results.length} result(s) for "${q}"`);
+  appendWithStagger(list, data.results.map(e => renderItem(e, true)));
+  setSearchStatus(`${data.results.length} result(s) for "${q}"`);
 }
 
 async function forgetMemory(commit, btn) {
@@ -284,6 +636,31 @@ async function forgetMemory(commit, btn) {
 function setStatus(msg) {
   document.getElementById("status").textContent = msg;
 }
+
+function setSearchStatus(msg) {
+  document.getElementById("search-status").textContent = msg;
+}
+
+// Pure presentational tab-switching: shows/hides pre-rendered sections,
+// no navigation, no new fetches beyond what each section already does.
+function switchTab(name) {
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  document.getElementById(`tab-${name}`).classList.add("active");
+  document.querySelectorAll(".sidebar-nav-item").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelector(".about-link").classList.toggle("active", name === "about");
+}
+
+// Intro splash: pure presentational, auto-dismisses under 1.5s, click
+// anywhere to skip. No effect on data loading — loadTimeline() below
+// runs immediately regardless of the intro's state.
+function hideIntro() {
+  const intro = document.getElementById("intro");
+  if (!intro) return;
+  intro.classList.add("intro-hide");
+  setTimeout(() => intro.remove(), 400);
+}
+document.getElementById("intro").addEventListener("click", hideIntro);
+setTimeout(hideIntro, 2200);
 
 loadTimeline();
 </script>
