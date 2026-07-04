@@ -55,10 +55,12 @@ This is the single most important moment in the video — the whole
 clearly visible.
 
 ### Beat 5 — Dashboard tour (1:50–2:20)
-**REAL/LIVE.** Start both servers (`recall_service/api.py` on :8000,
-static server on :5173 — exact restart commands are in this repo's
-session history / README setup section), open
-`http://127.0.0.1:5173/index.html`, and:
+**REAL/LIVE.** Open the real deployed dashboard —
+**https://web-production-67f7f.up.railway.app** — no local servers
+needed, this is the actual live deployment (one Railway service serves
+both the API and the dashboard). This is a stronger beat than localhost
+would have been: it's proof the whole system runs somewhere real, not
+just on the recording machine. Then:
 1. Scroll the timeline — point out the vertical rail, the strikethrough
    on the two forgotten entries (`mu-a1f3c02`, `mu-5f2b7c4`), the
    red-tinted LOW card with ⚠️ on `mu-d5b6e13`, and the "supersedes"
@@ -81,7 +83,8 @@ say it out loud, don't just caption it small.
 ---
 
 ## Recording checklist before hitting record
-- [ ] `.env` has real credentials, both servers running (`curl localhost:8000/health`, `curl localhost:5173/index.html`)
+- [ ] Live deployment is up: `curl https://web-production-67f7f.up.railway.app/health` returns `"status":"healthy"`
+- [ ] Beat 2 (`remember()` ingesting live) still runs locally against the same real Cognee Cloud dataset the deployment reads from — a local `.env` with real credentials is still needed for that beat specifically, even though Beat 5 uses the deployed URL
 - [ ] A fresh Claude Code session ready for Beats 3–4 (not this session — hooks may not hot-reload)
-- [ ] Decide in advance whether Beat 5's live `forget()` click is happening — if yes, it's genuinely one-way for that memory
+- [ ] Decide in advance whether Beat 5's live `forget()` click is happening — if yes, it's genuinely one-way for that memory, and it prunes the same real dataset the deployment reads from, not a separate copy
 - [ ] Beat 1's illustrative framing is scripted/captioned, not left ambiguous

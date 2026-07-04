@@ -104,7 +104,7 @@ clipped to `[0, 1]`, labeled **HIGH** (≥0.7) / **MEDIUM** (≥0.4) / **LOW —
 ## Setup
 
 ```bash
-git clone <this-repo> && cd cognee-agent-memory
+git clone https://github.com/Aashritha-2005/sessionZero-agent-memory.git && cd sessionZero-agent-memory
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
