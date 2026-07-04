@@ -240,9 +240,22 @@ cognee-agent-memory/
 
 ## CURRENT STATUS
 
-**Last updated:** July 2, 2026, Day 3 session in progress (post-submission-polish additions)
+**Last updated:** July 4, 2026, Day 3 — deployment complete
 
-**Stage:** Day 2 fully complete. Day 3: demo shot list, README accuracy pass, §0.1 compliance check all done. Plus three additive scope extensions (generalized ingestion, second agent bridge, "Beyond Claude Code" README section) completed without touching any previously-verified code. Demo video recording and final deadline confirmation still open.
+**Stage:** Day 2 fully complete. Day 3: demo shot list, README accuracy pass, §0.1 compliance check, three additive scope extensions, and now **live deployment (Tier 1 pre-submission pass)** all done. Demo video recording and final deadline confirmation still open — everything else is real and verified end-to-end, including a real public URL.
+
+**🔗 LIVE DEPLOYMENT:** https://web-production-67f7f.up.railway.app — real Cognee Cloud dataset (`shiftlog_demo`), deployed on Railway. Verified for real:
+- `GET /` → 200, serves the SessionZero dashboard
+- `GET /health` → 200, real Cognee backend health (postgres/pgvector/graph_db all healthy)
+- `GET /timeline` → 200, count 15, `a1f3c02`/`5f2b7c4` correctly forgotten
+- `GET /recall?query=Does ShiftLog use JWT for authentication?` → 200, reproduces the signature result exactly: `8c5f0d7` HIGH 0.975, `d5b6e13` LOW 0.293 with contradiction penalty
+- `POST /forget` confirmed present in the deployed OpenAPI spec, not invoked against the live deployment (would permanently prune real demo data needed for the recording) — its logic is identical to what's already verified locally and in earlier sessions
+
+**Deployment path taken (documented honestly, since it had real friction, not a smooth one-shot):**
+- Initial attempt used a Railway *project token* (`RAILWAY_TOKEN`) non-interactively via CLI — failed consistently across `whoami`/`status`/`link`/`up` with "Unauthorized"/"Not signed in" despite the token loading correctly and matching Railway's own current docs exactly. Diagnosed thoroughly (confirmed shell env, confirmed docs, retried after project+service existed) before concluding it was a genuine CLI/token issue, not a mistake on our side.
+- Pivoted to connecting GitHub directly via Railway's web dashboard instead of fighting the CLI further — this is what actually worked.
+- Hit one more real snag: the first Railway project/service ("splendid-encouragement" in "giving-delight") had its Source connected to a *different*-looking repo name (`sessionZero-agent-memory`) that turned out to be our own repo after a GitHub auto-rename (`cognee-agent-memory` → `sessionZero-agent-memory`, confirmed via matching commit SHA `a34286c`) — but that service never actually had an active deployment triggered, so `/health` kept 404ing with Railway's own edge fallback error. Rather than keep debugging that project, the user restarted clean as a new Railway project ("cozy-kindness", service "web"), reconnected the (correctly-named-now) GitHub repo, and that deployed successfully on the first real build.
+- Local git remote updated to `github.com/Aashritha-2005/sessionZero-agent-memory` to match the renamed repo.
 
 **Additive scope extensions (user-directed, explicitly scoped to not touch `trust_score.py`, `bridge.py`, the dashboard, or any verified Cognee integration code):**
 
@@ -275,9 +288,18 @@ cognee-agent-memory/
    - Rule 8 (job-interview framing): ✅ N/A, not applicable to this submission's messaging.
    - Also checked: `.env` confirmed not tracked (`git ls-files` clean), no hardcoded API keys/secrets anywhere in tracked files (`git grep` for key-shaped strings returned nothing).
 
-**Next task:** Record the demo video per `demo/demo_script.md`, confirm the exact submission deadline time from the hackathon Schedule tab (still unconfirmed — do not assume end-of-day July 5), add the real video link to README, then final submit with buffer before the deadline.
+**Tier 1 pre-submission deployment pass — all done, in order:**
 
-**Blockers:** None. Demo video recording is the last substantive task; deadline time confirmation is a quick external check, not blocked by anything in this repo.
+1. **Backend + dashboard deployed** — see "LIVE DEPLOYMENT" callout above. One Railway service serves both (`recall_service/api.py`'s `GET /` now returns `dashboard/index.html` via `FileResponse`); `dashboard/index.html`'s `API_BASE` is environment-aware (relative/same-origin when served by the backend, falls back to `localhost:8000` only for the separate-port local dev flow) — verified functionally identical to before at each step.
+2. **CI pipeline + linting** — `.github/workflows/ci.yml` runs `ruff check .` + the full test suite on every push. Fixed all 10 real lint findings (3 unsorted-import blocks, 4 ambiguous `l` variable names, 3 over-length lines) — 0 remaining. Confirmed the test suite needs zero Cognee credentials to pass (pure unit tests), so CI needs no secrets. Both pushes to `master` are green: runs `28711483320` and `28711570524`.
+3. **Dependency pinning** — `requirements.txt` pinned to exact installed versions (`cognee==1.2.2`, `fastapi==0.139.0`, `uvicorn[standard]==0.49.0`, `python-dotenv==1.2.2`, `pytest==9.1.1`); verified a completely fresh venv installs cleanly and all 28 tests still pass. `requirements-dev.txt` adds pinned `ruff==0.15.20` for CI.
+4. **README final polish** — table of contents added; ASCII architecture diagram replaced with a real hand-written SVG (`docs/architecture.svg`, embedded as an image, not a chat-only widget); live deployment URL added at the top, above the fold; demo video placeholder retained (still pending recording); also disclosed the `path_length_score` dead-weight and unknown-scale-behavior limitations that came up in conversation, in addition to the pre-existing unexplained-disappearance disclosure.
+
+**Repo rename note:** partway through deployment, GitHub reported our repo had moved to `Aashritha-2005/sessionZero-agent-memory` (auto-renamed, likely by the Railway GitHub App's naming, confirmed to be the same repo via matching commit SHA `a34286c`). Local `origin` remote updated to match. The live Railway deployment is on a separate fresh project ("cozy-kindness"/"web") after the first project's service ("giving-delight"/"splendid-encouragement") never got an active deployment triggered — that first service can be deleted or left idle, it's not doing anything.
+
+**Next task:** Record the demo video per `demo/demo_script.md` (now can and should show the *real live deployed URL*, not just localhost), confirm the exact submission deadline time from the hackathon Schedule tab (still unconfirmed — do not assume end-of-day July 5), add the real video link to README, then final submit with buffer before the deadline.
+
+**Blockers:** None. Demo video recording is the last substantive task; deadline time confirmation is a quick external check, not blocked by anything in this repo. Tier 2 items (local improve()/memify() demo, additional Cognee search types) were not attempted — Tier 1 alone consumed the available time/risk budget for this pass, per the user's own tiering. Tier 3 items (real statistical calibration, fixing path_length_score, live trust-signal visualization) were explicitly out of scope and correctly not attempted.
 
 ---
 
