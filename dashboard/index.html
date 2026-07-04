@@ -377,6 +377,29 @@
   }
   .provenance code { color: #8ab4f8; font-style: normal; }
   .signals span { margin-right: 16px; font-style: italic; }
+  .signal-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .signal-bar-label { width: 90px; flex-shrink: 0; font-style: italic; color: var(--muted); }
+  .signal-bar-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .signal-bar-fill {
+    height: 100%;
+    background: #8ab4f8;
+    border-radius: 4px;
+    transition: width 300ms ease;
+  }
+  .signal-bar-fill.penalty { background: var(--low); }
+  .signal-bar-value { width: 36px; text-align: right; flex-shrink: 0; color: var(--muted); font-style: italic; }
   .actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
   .actions button { font-size: 21px; padding: 18px 28px; min-height: 52px; }
   .warn { color: var(--low); font-weight: 600; }
@@ -525,6 +548,24 @@ function levelOf(label) {
   return "LOW";
 }
 
+// Pure rendering helper: turns an already-computed 0-1 signal value
+// (already displayed as plain text before this change) into a small CSS
+// bar. No new data, no new fetch, no new interactive state — a
+// scoped-down, low-risk stand-in for a full interactive visualization
+// feature, which was judged too risky to build fresh this close to
+// submission.
+function signalBar(name, value, isPenalty) {
+  const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
+  const cls = isPenalty ? "signal-bar-fill penalty" : "signal-bar-fill";
+  return `
+    <div class="signal-bar-row">
+      <span class="signal-bar-label">${name}</span>
+      <div class="signal-bar-track"><div class="${cls}" style="width:${pct}%"></div></div>
+      <span class="signal-bar-value">${value.toFixed(2)}</span>
+    </div>
+  `;
+}
+
 function renderItem(e, isRecallResult) {
   const level = levelOf(e.label);
   const forgotten = e.status === "forgotten";
@@ -553,11 +594,11 @@ function renderItem(e, isRecallResult) {
       </div>
     </div>
     <div class="provenance">
-      <div class="signals">
-        <span>path: ${e.signals.path_length_score.toFixed(2)}</span>
-        <span>similarity: ${e.signals.similarity_score.toFixed(2)}</span>
-        <span>recency: ${e.signals.recency_score.toFixed(2)}</span>
-        <span>contradiction: ${e.signals.contradiction_penalty.toFixed(2)}</span>
+      <div class="signals signal-bars">
+        ${signalBar("path", e.signals.path_length_score)}
+        ${signalBar("similarity", e.signals.similarity_score)}
+        ${signalBar("recency", e.signals.recency_score)}
+        ${signalBar("contradiction", e.signals.contradiction_penalty, true)}
       </div>
       ${e.files ? `<div>files: ${e.files.join(", ")}</div>` : ""}
       ${e.superseded_by && e.superseded_by.length ? `<div class="warn">superseded by: ${e.superseded_by.join(", ")}</div>` : ""}
