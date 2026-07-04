@@ -28,10 +28,10 @@
 
 | Criterion | What Judges Are Actually Scoring | Our Answer |
 |---|---|---|
-| Potential Impact | Does it solve a real, painful problem? | Context loss in AI coding agents — a problem every dev using Claude Code/Codex has today |
-| Creativity & Innovation | Is this novel, not just "chatbot remembers stuff"? | Trust-calibrated recall (confidence scoring + provenance) — nobody else will build this |
-| Technical Excellence | Code quality, engineering depth | Clean modular architecture, real ingestion pipeline, real calibration math, tests |
-| Best Use of Cognee | Depth of use of remember/recall/improve-memify/forget | We deliberately exercise ALL FOUR lifecycle APIs with clear justification for each |
+| Potential Impact | Does it solve a real, painful problem? | Context loss in AI coding agents — a problem every dev using Claude Code/Codex has today. **[ACTUAL OUTCOME: proven only against synthetic demo data (see below), not a real messy codebase — the problem is real, the demonstration is not yet at real-world scale.]** |
+| Creativity & Innovation | Is this novel, not just "chatbot remembers stuff"? | Trust-weighted recall (confidence scoring + provenance) — nobody else will build this. **[ACTUAL OUTCOME: the specific packaging for coding-agent memory is a fair differentiator; "nobody else will build this" overstates it — contradiction-aware/decay-weighted retrieval isn't literally unprecedented in RAG/knowledge-graph literature.]** |
+| Technical Excellence | Code quality, engineering depth | Clean modular architecture, real ingestion pipeline, real trust-weighting math, tests. **[ACTUAL OUTCOME: real, but "calibration" in the rigorous statistical sense was checked and found not demonstrable at this dataset size — see recall_service/calibration.py and README's Known Limitations. Trust scoring is honest weighting, not proven calibration.]** |
+| Best Use of Cognee | Depth of use of remember/recall/improve-memify/forget | We deliberately exercise ALL FOUR lifecycle APIs with clear justification for each. **[ACTUAL OUTCOME: this is false as originally written — improve()/memify() are SDK-only on Cognee Cloud and were never executed against real project data (a local demo attempt was also tried and abandoned after real friction). What actually shipped: remember()/recall()/forget() deeply and genuinely used, with forget()-based consolidation as the real, honest replacement for improve()/memify(). Disclosed plainly in the README, not hidden — see its Cognee API usage table.]** |
 | User Experience | Is the output usable/understandable? | Timeline dashboard makes invisible memory visible; CLI is simple |
 | Presentation Quality | Demo clarity, README, storytelling | Script the demo around the literal "agent forgets" pain point; polished README with GIF/video |
 
@@ -41,7 +41,9 @@
 
 **Name:** cognee-agent-memory
 
-**One-liner:** A Cognee-powered memory layer for AI coding agents (Claude Code / Codex) that remembers past architecture decisions, bugs, and their fixes across sessions and repos — and unlike a plain memory bot, every recalled fact carries a calibrated trust score and a visible provenance path, so the agent never silently injects stale or wrong context.
+**One-liner:** A Cognee-powered memory layer for AI coding agents (Claude Code, with Codex sketched as a future integration — see below) that remembers past architecture decisions, bugs, and their fixes across sessions and repos — and unlike a plain memory bot, every recalled fact carries a trust-weighted score and a visible provenance path, so the agent never silently injects stale or wrong context.
+
+**[ACTUAL OUTCOME on the claims above]:** Claude Code integration is real and live-tested in an actual session. Codex integration (`codex_bridge.py`) is real code, structurally verified against Cognee's actual Codex plugin source, and HTTP-tested — but never run inside a live Codex session, so "for Claude Code / Codex" overstates it; it's Claude Code (proven) + Codex (pattern demonstrated, unverified live). "Calibrated" was softened to "trust-weighted" project-wide after a real calibration check (`recall_service/calibration.py`) found the claim wasn't statistically demonstrable at this dataset's size — see README's Known Limitations.
 
 **The problem statement (use this exact framing in the README and demo — it mirrors the hackathon's own "hangover" theme):**
 > Every new AI coding agent session starts with total amnesia. You explain the same architecture decision three times. The agent forgets why you rejected an approach last week and suggests it again. Worse — if you *do* bolt memory onto an agent, a wrong or stale memory gets injected with the same confidence as a correct one, and the agent confidently repeats an old mistake. cognee-agent-memory fixes both problems: it remembers, and it tells you *how sure it is* and *why*.
@@ -50,6 +52,8 @@
 - Directly usable by us (dogfooding with real repos: HireScript, TaskFlow, portfolio site) — real data, not synthetic demo filler.
 - The confidence/provenance layer is a genuine technical contribution, raising the ceiling on "Technical Excellence" and "Creativity."
 - Cognee's four lifecycle APIs (`remember`, `recall`, `improve`/`memify`, `forget`) all have a clear, non-forced justification in this design — maximizes "Best Use of Cognee" score.
+
+**[ACTUAL OUTCOME]:** the dogfooding-on-real-repos plan above was explicitly changed early on (user-directed scope decision, preserved in the CURRENT STATUS log) — this project never touches HireScript/TaskFlow/portfolio site at all. All data is 15 hand-authored, synthetic-but-realistic commits for a fictional project ("ShiftLog"), entirely self-contained inside this repo. This was the right call for keeping scope safe and reviewable, but it means "Potential Impact" rests on a demonstration built to succeed, not a real codebase's actual mess — worth knowing plainly rather than letting the original claim stand uncorrected. The four-lifecycle-API claim has the same caveat as in §0.2 above — `improve()`/`memify()` didn't execute against real project data; `forget()`-based consolidation is the honest real substitute.
 
 ---
 
