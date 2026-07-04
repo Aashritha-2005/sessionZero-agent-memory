@@ -3,11 +3,27 @@
 **Trust-calibrated memory for AI coding agents.**
 Built for *The Hangover Part AI: Where's My Context?* (WeMakeDevs x Cognee hackathon, June 29 – July 5, 2026).
 
+**🔗 Live deployment:** _[to be added — Railway deploy in progress]_
+**🎥 Demo video:** _[to be added — recording in progress, see `demo/demo_script.md` for the shot list]_
+
 > Every new AI coding agent session starts with total amnesia. You explain the same architecture decision three times. The agent forgets why you rejected an approach last week and suggests it again. Worse — if you *do* bolt memory onto an agent, a wrong or stale memory gets injected with the same confidence as a correct one, and the agent confidently repeats an old mistake.
 >
 > cognee-agent-memory fixes both problems: it remembers, **and it tells you how sure it is and why.**
 
-**Demo video:** _[to be added — recording in progress, see `demo/demo_script.md` for the shot list]_
+---
+
+## Table of contents
+
+- [The problem](#the-problem)
+- [Architecture](#architecture)
+- [Why a synthetic demo project ("ShiftLog")?](#why-a-synthetic-demo-project-shiftlog)
+- [Cognee API usage](#cognee-api-usage)
+- [Trust scoring](#trust-scoring)
+- [Setup](#setup)
+- [Future work: agent-agnostic by design](#future-work-agent-agnostic-by-design)
+- [AI Assistance Disclosure](#ai-assistance-disclosure)
+- [Known limitations](#known-limitations)
+- [Non-negotiables this project followed](#non-negotiables-this-project-followed)
 
 ---
 
@@ -25,40 +41,9 @@ A naive approach — text-search commit history, or dump the last N commits into
 
 ## Architecture
 
-```
-demo-data/commits.jsonl (synthetic-but-realistic commit history)
-        │
-        ▼
-  ingest/git_reader.py, memory_units.py   — structure commits into
-        │                                    "memory units" with provenance
-        ▼
-  ingest/remember_client.py  ──remember()──▶  Cognee Cloud knowledge graph
-        │                                              │
-        │                                              ▼
-  consolidate/memify_job.py                   (see "Cognee API usage" below —
-  (reference-graph + real forget(),             improve()/memify() are SDK-only
-   verified via recall() before/after)          on Cognee Cloud, so this step
-        │                                        is a real, honest adaptation)
-        │                                              │
-  DEV WORKS IN CLAUDE CODE ──UserPromptSubmit hook──▶  RECALL (Cognee recall())
-        │                                              │
-        │                                              ▼
-        │                                     TRUST SCORING (recall_service/trust_score.py)
-        │                                     - path length (Cognee's topological_rank)
-        │                                     - similarity (CHUNKS rank position)
-        │                                     - recency decay (30-day half-life)
-        │                                     - contradiction penalty
-        │                                              │
-        ◀── claude_code_bridge/bridge.py injects ──────┘
-             labeled context + confidence into the session
-        │
-        ▼
-  prune/forget_watcher.py ──forget()──▶  removes graph nodes tied to
-  (triggered on file/decision deletion)   deleted files or superseded decisions
+![cognee-agent-memory architecture diagram](docs/architecture.svg)
 
-  dashboard/index.html — timeline, confidence color-coding,
-  provenance drill-down, manual "forget this" button (real forget())
-```
+Commits flow through ingestion into Cognee's knowledge graph via `remember()`; a Claude Code hook queries `recall()`, scores results with four trust signals, and injects labeled context; `forget()` prunes stale or superseded memories; the dashboard exposes the timeline and manual pruning.
 
 ### Components
 
@@ -161,6 +146,9 @@ Built with assistance from **Claude Code** for implementation — including the 
 
 ## Known limitations
 
+- **The dataset is small enough to hide real problems.** 15 memory units, one contradiction pair, one revert, one deletion. That's enough to prove the mechanism works end-to-end, but it's also small enough that two real questions remain genuinely open, not quietly resolved:
+  - `path_length_score` never discriminates in this dataset — `topological_rank` comes back `0` for every result, so it's dead weight right now, not a real fourth signal. Fixing this would need a much larger, structurally varied graph (hundreds of interconnected nodes) than we could build and validate before the deadline.
+  - We have exactly one example of each interesting case (one contradiction, one revert). What happens with 500 commits and a dozen overlapping contradictions is an unanswered scale question — we don't know, and we'd rather say that than imply we do.
 - During development, one memory unit was observed to disappear from the live Cognee Cloud dataset without any explicit `forget()` call in our session history — cause unconfirmed (possibly server-side dedup/pruning behavior we don't have visibility into). It was successfully re-ingested. We're disclosing this as an open question about hosted-tenant data persistence, not something we've solved.
 
 ---

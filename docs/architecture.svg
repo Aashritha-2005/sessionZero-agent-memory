@@ -1,0 +1,95 @@
+<svg viewBox="0 0 1000 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">cognee-agent-memory architecture</title>
+  <desc id="desc">Commits flow through ingestion into Cognee's knowledge graph via remember(); a Claude Code hook queries recall(), scores results with four trust signals, and injects labeled context; forget() prunes stale or superseded memories; a dashboard exposes the timeline and manual pruning.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4b5563"/>
+    </marker>
+    <style>
+      .box { fill: #f8fafc; stroke: #334155; stroke-width: 1.5; rx: 8; }
+      .box-accent { fill: #eef2ff; stroke: #4f46e5; stroke-width: 1.5; rx: 8; }
+      .box-warn { fill: #fef2f2; stroke: #b91c1c; stroke-width: 1.5; rx: 8; }
+      .label { font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600; fill: #0f172a; }
+      .sub { font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 12px; fill: #475569; }
+      .edge { stroke: #4b5563; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+      .edge-label { font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 11px; fill: #4b5563; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="620" fill="#ffffff"/>
+
+  <!-- Row 1: ingestion -->
+  <rect class="box" x="40" y="30" width="220" height="60"/>
+  <text class="label" x="150" y="55" text-anchor="middle">demo-data/commits.jsonl</text>
+  <text class="sub" x="150" y="75" text-anchor="middle">synthetic-but-realistic commits</text>
+
+  <line class="edge" x1="260" y1="60" x2="330" y2="60"/>
+
+  <rect class="box" x="330" y="30" width="220" height="60"/>
+  <text class="label" x="440" y="55" text-anchor="middle">ingest/</text>
+  <text class="sub" x="440" y="75" text-anchor="middle">git_reader.py, memory_units.py</text>
+
+  <line class="edge" x1="550" y1="60" x2="620" y2="60"/>
+  <text class="edge-label" x="585" y="50" text-anchor="middle">remember()</text>
+
+  <rect class="box-accent" x="620" y="30" width="260" height="60"/>
+  <text class="label" x="750" y="55" text-anchor="middle">Cognee Cloud</text>
+  <text class="sub" x="750" y="75" text-anchor="middle">real knowledge graph (shiftlog_demo)</text>
+
+  <!-- down to recall -->
+  <line class="edge" x1="750" y1="90" x2="750" y2="150"/>
+  <text class="edge-label" x="790" y="120" text-anchor="middle">recall()</text>
+
+  <!-- Row 2: recall + trust score -->
+  <rect class="box" x="40" y="150" width="220" height="60"/>
+  <text class="label" x="150" y="175" text-anchor="middle">Claude Code session</text>
+  <text class="sub" x="150" y="195" text-anchor="middle">UserPromptSubmit hook</text>
+
+  <line class="edge" x1="260" y1="180" x2="330" y2="180"/>
+
+  <rect class="box" x="330" y="150" width="220" height="60"/>
+  <text class="label" x="440" y="175" text-anchor="middle">claude_code_bridge/</text>
+  <text class="sub" x="440" y="195" text-anchor="middle">bridge.py</text>
+
+  <line class="edge" x1="550" y1="180" x2="620" y2="180"/>
+
+  <rect class="box-accent" x="620" y="150" width="260" height="60"/>
+  <text class="label" x="750" y="175" text-anchor="middle">recall_service/api.py</text>
+  <text class="sub" x="750" y="195" text-anchor="middle">/recall, /timeline, /forget</text>
+
+  <line class="edge" x1="750" y1="210" x2="750" y2="270"/>
+
+  <!-- Row 3: trust scoring -->
+  <rect class="box" x="560" y="270" width="320" height="90"/>
+  <text class="label" x="720" y="295" text-anchor="middle">trust_score.py — 4 signals</text>
+  <text class="sub" x="720" y="315" text-anchor="middle">path length · similarity · recency</text>
+  <text class="sub" x="720" y="332" text-anchor="middle">contradiction penalty</text>
+  <text class="sub" x="720" y="350" text-anchor="middle">→ HIGH / MEDIUM / LOW label</text>
+
+  <line class="edge" x1="560" y1="315" x2="440" y2="315"/>
+  <line class="edge" x1="440" y1="315" x2="440" y2="210"/>
+  <text class="edge-label" x="470" y="260" text-anchor="middle">labeled context injected</text>
+
+  <!-- Row 4: pruning -->
+  <rect class="box-warn" x="40" y="420" width="260" height="70"/>
+  <text class="label" x="170" y="445" text-anchor="middle">consolidate/ + prune/</text>
+  <text class="sub" x="170" y="465" text-anchor="middle">superseded/deleted memories</text>
+  <text class="sub" x="170" y="480" text-anchor="middle">→ real forget()</text>
+
+  <line class="edge" x1="300" y1="455" x2="620" y2="455"/>
+  <line class="edge" x1="620" y1="455" x2="620" y2="210"/>
+  <text class="edge-label" x="460" y="445" text-anchor="middle">forget()</text>
+
+  <!-- Row 5: dashboard -->
+  <rect class="box" x="360" y="420" width="280" height="70"/>
+  <text class="label" x="500" y="445" text-anchor="middle">dashboard/index.html</text>
+  <text class="sub" x="500" y="465" text-anchor="middle">timeline · confidence colors</text>
+  <text class="sub" x="500" y="480" text-anchor="middle">provenance · manual forget</text>
+
+  <line class="edge" x1="640" y1="455" x2="750" y2="455"/>
+  <line class="edge" x1="750" y1="455" x2="750" y2="210"/>
+
+  <!-- legend -->
+  <text class="sub" x="40" y="540" font-size="12">Solid boxes = real Cognee API calls (remember / recall / forget). Accent boxes = Cognee Cloud + the FastAPI service in front of it.</text>
+  <text class="sub" x="40" y="558" font-size="12">improve()/memify() are SDK-only on Cognee Cloud — not shown here as a hosted call; see README "Cognee API usage" for the honest writeup.</text>
+</svg>
