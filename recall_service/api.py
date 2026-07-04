@@ -15,8 +15,11 @@ what the dashboard calls to browse memories/provenance/prune.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from ingest.dataset_index import build_commit_to_data_id, get_dataset_id
 from ingest.memory_units import build_memory_units
@@ -31,6 +34,8 @@ from recall_service.trust_score import (
     recency_score,
     score_chunks,
 )
+
+DASHBOARD_DIR = Path(__file__).resolve().parent.parent / "dashboard"
 
 app = FastAPI(title="cognee-agent-memory recall_service")
 app.add_middleware(
@@ -49,6 +54,14 @@ def _result_to_dict(r: TrustResult) -> dict:
         "label": r.label,
         "signals": r.signals.__dict__,
     }
+
+
+@app.get("/")
+def dashboard():
+    """Serves dashboard/index.html directly from this backend, so a
+    single Railway deploy covers both the API and the UI — no separate
+    static host needed."""
+    return FileResponse(DASHBOARD_DIR / "index.html")
 
 
 @app.get("/health")

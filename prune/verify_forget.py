@@ -41,10 +41,12 @@ def main():
     after = snapshot("AFTER forget()")
 
     before_commits = {
-        next((l for l in c.get("text", "").splitlines() if l.startswith("Commit:")), None) for c in before
+        next((line for line in c.get("text", "").splitlines() if line.startswith("Commit:")), None)
+        for c in before
     }
     after_commits = {
-        next((l for l in c.get("text", "").splitlines() if l.startswith("Commit:")), None) for c in after
+        next((line for line in c.get("text", "").splitlines() if line.startswith("Commit:")), None)
+        for c in after
     }
     removed = before_commits - after_commits
     print(f"\n=== DIFF: commits present before but gone after ===\n{removed}")

@@ -12,19 +12,20 @@ from recall_service.trust_score import (
     label_for_score,
     path_length_score,
     recency_score,
-    similarity_score,
     score_chunks,
+    similarity_score,
 )
 
 
 def _unit(source_commit, kind="decision", references=(), timestamp=None):
+    ts = timestamp or datetime(2026, 1, 1, tzinfo=timezone.utc)
     return MemoryUnit(
         id=f"mu-{source_commit}",
         kind=kind,
         title="t",
-        body=f"[{kind}] body\nCommit: {source_commit} ({(timestamp or datetime(2026, 1, 1, tzinfo=timezone.utc)).isoformat()})",
+        body=f"[{kind}] body\nCommit: {source_commit} ({ts.isoformat()})",
         files=[],
-        timestamp=timestamp or datetime(2026, 1, 1, tzinfo=timezone.utc),
+        timestamp=ts,
         source_commit=source_commit,
         references=list(references),
     )

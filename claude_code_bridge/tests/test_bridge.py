@@ -1,5 +1,5 @@
+from claude_code_bridge.bridge import INJECT_FLOOR, MAX_INJECTED, format_context_block
 from recall_service.trust_score import TrustResult, TrustSignals
-from claude_code_bridge.bridge import format_context_block, INJECT_FLOOR, MAX_INJECTED
 
 
 def _result(commit, score, contradiction_penalty=0.0, text="[decision] example\nCommit: x"):

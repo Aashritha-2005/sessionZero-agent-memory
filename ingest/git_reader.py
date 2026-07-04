@@ -186,4 +186,5 @@ if __name__ == "__main__":
         selected_commits = read_commits()
 
     for commit in selected_commits:
-        print(f"{commit.timestamp.date()} [{commit.type:>13}] {commit.hash}  {commit.message.splitlines()[0]}")
+        title = commit.message.splitlines()[0]
+        print(f"{commit.timestamp.date()} [{commit.type:>13}] {commit.hash}  {title}")

@@ -1,5 +1,5 @@
-cognee
-fastapi
-uvicorn[standard]
-python-dotenv
-pytest
+cognee==1.2.2
+fastapi==0.139.0
+uvicorn[standard]==0.49.0
+python-dotenv==1.2.2
+pytest==9.1.1

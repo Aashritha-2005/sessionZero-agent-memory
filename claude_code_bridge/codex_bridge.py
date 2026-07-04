@@ -74,7 +74,9 @@ def format_context_block(results: list[dict]) -> str:
     lines = ["## Relevant project memory (cognee-agent-memory, via Codex bridge)", ""]
     for r in injected:
         first_line = r["text"].splitlines()[0] if r.get("text") else ""
-        lines.append(f"- **[{r['label']}]** (score {r['score']:.2f}, commit `{r['source_commit']}`) {first_line}")
+        lines.append(
+            f"- **[{r['label']}]** (score {r['score']:.2f}, commit `{r['source_commit']}`) {first_line}"
+        )
         if r["signals"]["contradiction_penalty"] > 0:
             lines.append("  - ⚠️ a newer memory contradicts this one — verify before relying on it.")
     return "\n".join(lines)

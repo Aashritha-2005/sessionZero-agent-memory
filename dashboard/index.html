@@ -510,7 +510,12 @@
 </div>
 
 <script>
-const API_BASE = "http://127.0.0.1:8000";
+// Environment-aware: when this page is served BY recall_service/api.py
+// itself (local single-server run, or the deployed Railway service),
+// the API is same-origin, so a relative "" base is correct. When run
+// via a separate static server on :5173 for local dev (two servers,
+// two origins), fall back to the local API's default port.
+const API_BASE = (location.port === "5173") ? "http://127.0.0.1:8000" : "";
 
 function levelOf(label) {
   if (label.startsWith("HIGH")) return "HIGH";

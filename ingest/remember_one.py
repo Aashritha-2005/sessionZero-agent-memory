@@ -7,7 +7,7 @@ from __future__ import annotations
 import sys
 
 from ingest.memory_units import build_memory_units
-from ingest.remember_client import remember_unit, _client
+from ingest.remember_client import _client, remember_unit
 
 
 def main(commit_hash: str):
