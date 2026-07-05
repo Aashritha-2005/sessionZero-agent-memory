@@ -9,11 +9,13 @@
     --medium: #a06a05;
     --low: #a6231f;
     --forgotten: #8a7d6c;
-    --bg: #f1ebe0;
-    --card: #fbf8f2;
-    --border: #ddd0b8;
-    --text: #241a12;
-    --muted: #7a6a58;
+    --bg: #100000;
+    --card: #f0f0e0;
+    --border: #402818;
+    --text: #241a12;       /* dark text — used INSIDE cream cards */
+    --text-on-dark: #f0f0e0; /* light text — used on the dark page background (chrome/hero) */
+    --muted: #7a6a58;       /* muted text inside cream cards */
+    --muted-on-dark: #c9b8a0; /* muted text on the dark page background */
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -21,9 +23,13 @@
     margin: 0;
     font-family: "Times New Roman", Times, serif;
     font-size: 19px;
-    background: var(--bg);
+    background:
+      radial-gradient(circle at 50% 8%, rgba(95, 45, 20, 0.55), transparent 42%),
+      radial-gradient(circle at 22% 34%, rgba(128, 76, 24, 0.35), transparent 24%),
+      radial-gradient(circle at 78% 34%, rgba(120, 55, 20, 0.38), transparent 28%),
+      linear-gradient(180deg, #030202 0%, #120704 48%, #1f1007 100%);
     background-attachment: fixed;
-    color: var(--text);
+    color: var(--text-on-dark);
     scroll-behavior: smooth;
   }
 
@@ -41,7 +47,7 @@
   .hero-value-prop {
     font-size: 19px;
     font-style: italic;
-    color: var(--muted);
+    color: var(--muted-on-dark);
     max-width: 640px;
     margin: 0 auto 28px;
     line-height: 1.5;
@@ -119,7 +125,7 @@
     letter-spacing: 1.5px;
     text-transform: uppercase;
     font-size: 15px;
-    color: var(--muted);
+    color: var(--muted-on-dark);
     opacity: 0;
     animation: introFadeIn 500ms ease forwards;
     animation-delay: 950ms;
@@ -138,7 +144,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(241,235,224,0.2));
+    background: linear-gradient(180deg, rgba(30,15,8,0.55), rgba(15,7,4,0.3));
     backdrop-filter: blur(6px);
   }
   .brand { display: flex; align-items: center; gap: 14px; }
@@ -153,13 +159,13 @@
   .brand .tagline {
     font-style: italic;
     font-size: 15px;
-    color: var(--muted);
+    color: var(--muted-on-dark);
     margin: 4px 0 0;
   }
   .about-link {
     background: transparent;
     border: none;
-    color: var(--muted);
+    color: var(--muted-on-dark);
     font-family: inherit;
     font-size: 19px;
     cursor: pointer;
@@ -167,7 +173,7 @@
     border-radius: 6px;
     transition: color 200ms ease, background-color 200ms ease;
   }
-  .about-link:hover, .about-link.active { color: var(--text); background: rgba(0,0,0,0.05); }
+  .about-link:hover, .about-link.active { color: var(--text-on-dark); background: rgba(240,230,210,0.08); }
 
   /* ---------------- Shell layout: sidebar + content, below the top bar ---------------- */
   .app-shell { display: flex; min-height: calc(100vh - 112px); }
@@ -180,7 +186,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(241,235,224,0.15));
+    background: linear-gradient(180deg, rgba(30,15,8,0.45), rgba(15,7,4,0.2));
     overflow-y: auto;
   }
   .sidebar-nav-item {
@@ -190,7 +196,7 @@
     padding: 18px 16px;
     border-radius: 8px;
     font-size: 21px;
-    color: var(--muted);
+    color: var(--muted-on-dark);
     cursor: pointer;
     background: transparent;
     border: none;
@@ -199,8 +205,8 @@
     width: 100%;
     transition: background-color 200ms ease, color 200ms ease;
   }
-  .sidebar-nav-item:hover { color: var(--text); background: rgba(0,0,0,0.05); }
-  .sidebar-nav-item.active { color: var(--text); background: rgba(47,111,235,0.14); }
+  .sidebar-nav-item:hover { color: var(--text-on-dark); background: rgba(240,230,210,0.08); }
+  .sidebar-nav-item.active { color: var(--text-on-dark); background: rgba(47,111,235,0.22); }
   .sidebar-nav-item svg { width: 22px; height: 22px; flex-shrink: 0; }
   .sidebar-about {
     margin-top: 22px;
@@ -283,7 +289,7 @@
   button.danger:hover { box-shadow: 0 6px 18px rgba(197,34,31,0.42); }
   button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-  .legend { display: flex; gap: 28px; margin-bottom: 20px; font-size: 14px; font-style: italic; color: var(--muted); flex-wrap: wrap; }
+  .legend { display: flex; gap: 28px; margin-bottom: 20px; font-size: 14px; font-style: italic; color: var(--muted-on-dark); flex-wrap: wrap; }
   .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
 
   /* ---------------- Timeline rail ---------------- */
@@ -332,9 +338,9 @@
     animation: dotPulseOnce 700ms ease-out;
   }
   @keyframes dotPulseOnce {
-    0% { box-shadow: 0 0 0 0 rgba(36,26,18,0.25); }
-    70% { box-shadow: 0 0 0 8px rgba(36,26,18,0); }
-    100% { box-shadow: 0 0 0 0 rgba(36,26,18,0); }
+    0% { box-shadow: 0 0 0 0 rgba(240,230,210,0.35); }
+    70% { box-shadow: 0 0 0 8px rgba(240,230,210,0); }
+    100% { box-shadow: 0 0 0 0 rgba(240,230,210,0); }
   }
   .tl-dot.HIGH { background: var(--high); }
   .tl-dot.MEDIUM { background: var(--medium); }
@@ -374,6 +380,9 @@
   .title.forgotten-title { text-decoration: line-through; text-decoration-color: var(--forgotten); text-decoration-thickness: 2px; color: var(--muted); font-weight: 500; font-style: italic; }
   .warn-icon { margin-right: 8px; }
   .meta { color: var(--muted); font-size: 20px; margin-top: 8px; letter-spacing: 0.2px; font-style: italic; }
+  /* .meta on the dark page chrome (status lines, dataset label) needs light text; */
+  /* .meta INSIDE a card (timeline item metadata) keeps the dark var(--muted) above. */
+  #status, #search-status, .controls > .meta { color: var(--muted-on-dark); }
   .supersedes {
     display: inline-block;
     margin-top: 10px;
