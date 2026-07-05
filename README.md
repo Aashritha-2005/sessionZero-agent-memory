@@ -1,4 +1,4 @@
-# cognee-agent-memory
+# SessionZERO-agentMemory
 
 **Trust-weighted memory for AI coding agents.**
 Built for *The Hangover Part AI: Where's My Context?* (WeMakeDevs x Cognee hackathon, June 29 – July 5, 2026).
