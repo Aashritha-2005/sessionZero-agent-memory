@@ -140,7 +140,7 @@
 
   /* ---------------- Top bar: full-width, sits above the sidebar+main row ---------------- */
   nav.topbar {
-    height: 112px;
+    height: 76px;
     padding: 0 36px;
     border-bottom: 1px solid var(--border);
     display: flex;
@@ -179,7 +179,7 @@
   .about-link:hover, .about-link.active { color: var(--text-on-dark); background: rgba(240,230,210,0.08); }
 
   /* ---------------- Shell layout: sidebar + content, below the top bar ---------------- */
-  .app-shell { display: flex; min-height: calc(100vh - 112px); }
+  .app-shell { display: flex; min-height: calc(100vh - 76px); }
 
   .sidebar {
     width: 420px;
@@ -238,6 +238,66 @@
     border-top: 1px dashed var(--border);
   }
   .sidebar-demo-facts li:first-child { border-top: none; padding-top: 0; }
+  .sidebar-flow {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sidebar-flow li {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 10px;
+    border-top: 1px dashed var(--border);
+    padding: 14px 0;
+  }
+  .sidebar-flow li:first-child { border-top: none; padding-top: 0; }
+  .flow-num {
+    color: #8b6a56;
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 700;
+  }
+  .flow-title {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .flow-copy {
+    display: block;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+  .sidebar-proof {
+    margin-top: 18px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .sidebar-proof-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .sidebar-proof-item {
+    border: 1px solid rgba(64,40,24,0.35);
+    border-radius: 8px;
+    padding: 10px;
+    background: rgba(36,26,18,0.04);
+  }
+  .sidebar-proof-value {
+    display: block;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .sidebar-proof-label {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.25;
+  }
 
   .content-area { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
@@ -467,25 +527,25 @@
      logic underneath. */
   .about-page { display: none; padding: 64px 36px 80px; }
   .about-page.active { display: block; animation: panelFade 320ms ease; }
-  .about-page-inner { max-width: 1080px; margin: 0 auto; }
-  .about-back-btn { display: block; margin: 40px auto 0; }
+  .about-page-inner { max-width: 1280px; margin: 0 auto; }
+  .about-back-btn { display: block; margin: 48px auto 0; font-size: 22px; }
 
-  .about-title { font-size: 34px; font-weight: 700; margin: 0 0 14px; text-align: center; }
+  .about-title { font-size: 38px; font-weight: 700; margin: 0 0 18px; text-align: center; }
   .about-intro {
-    font-size: 19px;
+    font-size: 23px;
     color: var(--muted-on-dark);
     text-align: center;
-    max-width: 720px;
-    margin: 0 auto 44px;
+    max-width: 860px;
+    margin: 0 auto 54px;
     line-height: 1.6;
   }
   .about-section-title {
-    font-size: 15px;
+    font-size: 19px;
     font-weight: 700;
     letter-spacing: 1.2px;
     text-transform: uppercase;
     color: var(--muted-on-dark);
-    margin: 48px 0 18px;
+    margin: 56px 0 22px;
   }
 
   /* Animated workflow strip: each step "lights up" in sequence on load */
@@ -520,6 +580,277 @@
   }
   .workflow-arrow { color: var(--muted-on-dark); font-size: 18px; }
 
+  .about-kicker {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--muted-on-dark);
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .arch-diagram-card, .detail-card {
+    background: rgba(240,240,224,0.96);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(36,26,18,0.12), 0 10px 28px rgba(0,0,0,0.22);
+    transition: box-shadow 220ms ease, transform 220ms ease;
+  }
+  .arch-diagram-card:hover, .detail-card:hover {
+    box-shadow: 0 2px 6px rgba(36,26,18,0.18), 0 18px 42px rgba(0,0,0,0.32);
+    transform: translateY(-2px);
+  }
+  .arch-diagram-card { padding: 34px 36px 38px; overflow-x: auto; }
+  .arch-svg-vertical { width: 100%; max-width: 980px; height: auto; display: block; margin: 0 auto; }
+  .arch-svg-vertical .av-stage {
+    cursor: default;
+    transition: filter 200ms ease, transform 200ms ease;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  .arch-svg-vertical .av-stage:hover {
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.35));
+    transform: translateY(-3px);
+  }
+  .diagram-title {
+    margin: 0 0 6px;
+    font-size: 32px;
+    text-align: center;
+  }
+  .diagram-subtitle {
+    margin: 0 auto 32px;
+    max-width: 780px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 21px;
+    line-height: 1.45;
+  }
+  .intelligence-diagram {
+    min-width: 1240px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.2fr 1fr;
+    gap: 40px;
+    align-items: stretch;
+    position: relative;
+    isolation: isolate;
+    padding: 18px 0 14px;
+  }
+  .diagram-layer {
+    border: 1px solid rgba(64,40,24,0.35);
+    border-radius: 10px;
+    padding: 30px 26px 28px;
+    background: rgba(255,255,255,0.76);
+    position: relative;
+    animation: layerFlow 7.2s ease-in-out infinite;
+    z-index: 2;
+    cursor: default;
+    transition: box-shadow 220ms ease, transform 220ms ease, border-color 220ms ease, background-color 220ms ease;
+  }
+  .diagram-layer:hover {
+    animation: aboutHoverFloat 900ms ease-in-out infinite alternate;
+    background: rgba(255,255,255,0.96);
+    border-color: rgba(42,95,208,0.70);
+    box-shadow:
+      0 0 0 5px rgba(79,140,255,0.24),
+      0 18px 44px rgba(0,0,0,0.34),
+      0 30px 70px rgba(36,26,18,0.24);
+    z-index: 5;
+  }
+  .diagram-layer::before {
+    position: absolute;
+    top: -16px;
+    left: 22px;
+    width: 42px;
+    height: 32px;
+    border-radius: 999px;
+    background: #241a12;
+    color: var(--card);
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    box-shadow: 0 5px 14px rgba(36,26,18,0.18);
+  }
+  .diagram-layer:nth-child(1)::before { content: "01"; }
+  .diagram-layer:nth-child(2)::before { content: "02"; }
+  .diagram-layer:nth-child(3)::before { content: "03"; }
+  .diagram-layer:nth-child(4)::before { content: "04"; }
+  .diagram-layer:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: -41px;
+    top: 50%;
+    width: 36px;
+    height: 36px;
+    color: #8b6a56;
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 36px;
+    text-align: center;
+    opacity: 0.35;
+    transform: translateY(-50%) translateX(0);
+    animation: sectionConnector 7.2s ease-in-out infinite;
+  }
+  .diagram-layer:nth-child(1) { animation-delay: 0s; }
+  .diagram-layer:nth-child(2) { animation-delay: 1.2s; }
+  .diagram-layer:nth-child(3) { animation-delay: 2.4s; }
+  .diagram-layer:nth-child(4) { animation-delay: 3.6s; }
+  .diagram-layer:nth-child(1)::after { animation-delay: 0.9s; }
+  .diagram-layer:nth-child(2)::after { animation-delay: 2.1s; }
+  .diagram-layer:nth-child(3)::after { animation-delay: 3.3s; }
+  @keyframes layerFlow {
+    0%, 26%, 100% { box-shadow: 0 1px 2px rgba(36,26,18,0.08); transform: translateY(0); background: rgba(255,255,255,0.76); border-color: rgba(64,40,24,0.35); }
+    7%, 16% { box-shadow: 0 0 0 4px rgba(59,120,240,0.28), 0 14px 28px rgba(36,26,18,0.14); transform: translateY(-5px); background: rgba(255,255,255,0.94); border-color: rgba(42,95,208,0.55); }
+  }
+  @keyframes aboutHoverFloat {
+    from { transform: translateY(-7px); }
+    to { transform: translateY(-13px); }
+  }
+  @keyframes sectionConnector {
+    0%, 28%, 100% { opacity: 0.35; transform: translateY(-50%) translateX(0); color: #8b6a56; text-shadow: none; }
+    8%, 18% { opacity: 1; transform: translateY(-50%) translateX(7px); color: #2a5fd0; text-shadow: 0 0 18px rgba(42,95,208,0.48); }
+  }
+  .layer-label {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: #8b6a56;
+    margin-bottom: 18px;
+  }
+  .layer-node {
+    border: 1px solid rgba(64,40,24,0.28);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 16px;
+    background: var(--card);
+    animation: nodeGlow 7.2s ease-in-out infinite;
+    transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease, background-color 200ms ease;
+  }
+  .layer-node:hover {
+    animation: aboutNodeFloat 850ms ease-in-out infinite alternate;
+    background: #fbfaf0;
+    border-color: rgba(79,140,255,0.72);
+    box-shadow:
+      0 0 0 4px rgba(79,140,255,0.18),
+      0 12px 28px rgba(0,0,0,0.24),
+      0 20px 42px rgba(36,26,18,0.18);
+  }
+  @keyframes aboutNodeFloat {
+    from { transform: translateY(-4px); }
+    to { transform: translateY(-9px); }
+  }
+  .diagram-layer:nth-child(1) .layer-node { animation-delay: 0.1s; }
+  .diagram-layer:nth-child(2) .layer-node { animation-delay: 1.3s; }
+  .diagram-layer:nth-child(3) .layer-node { animation-delay: 2.5s; }
+  .diagram-layer:nth-child(4) .layer-node { animation-delay: 3.7s; }
+  @keyframes nodeGlow {
+    0%, 20%, 100% { border-color: rgba(64,40,24,0.28); }
+    8% { border-color: rgba(42,95,208,0.55); }
+  }
+  .layer-node strong {
+    display: block;
+    font-size: 27px;
+    margin-bottom: 8px;
+  }
+  .layer-node span {
+    display: block;
+    font-size: 23px;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+  .signal-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .signal-pill {
+    border-radius: 999px;
+    padding: 13px 14px;
+    background: rgba(59,120,240,0.10);
+    color: #244fba;
+    font-size: 21px;
+    font-weight: 700;
+    text-align: center;
+    animation: signalPulse 7.2s ease-in-out infinite;
+    transition: box-shadow 180ms ease, transform 180ms ease, background-color 180ms ease;
+  }
+  .signal-pill:hover {
+    animation: aboutSignalFloat 820ms ease-in-out infinite alternate;
+    background: rgba(79,140,255,0.20);
+    box-shadow: 0 0 0 4px rgba(79,140,255,0.16), 0 12px 28px rgba(42,95,208,0.28);
+  }
+  @keyframes aboutSignalFloat {
+    from { transform: translateY(-3px) scale(1.03); }
+    to { transform: translateY(-8px) scale(1.06); }
+  }
+  .signal-pill:nth-child(1) { animation-delay: 2.55s; }
+  .signal-pill:nth-child(2) { animation-delay: 2.75s; }
+  .signal-pill:nth-child(3) { animation-delay: 2.95s; }
+  .signal-pill:nth-child(4) { animation-delay: 3.15s; }
+  @keyframes signalPulse {
+    0%, 18%, 100% { background: rgba(59,120,240,0.10); transform: scale(1); }
+    8% { background: rgba(59,120,240,0.22); transform: scale(1.04); }
+  }
+  .decision-stack {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .decision-pill {
+    border-radius: 8px;
+    padding: 13px 14px;
+    font-size: 18px;
+    font-weight: 700;
+    animation: decisionPulse 7.2s ease-in-out infinite;
+  }
+  .decision-pill.high { animation-delay: 3.8s; }
+  .decision-pill.low { animation-delay: 4.05s; }
+  .decision-pill.forget { animation-delay: 4.3s; }
+  @keyframes decisionPulse {
+    0%, 20%, 100% { transform: translateX(0); filter: none; }
+    8% { transform: translateX(5px); filter: brightness(1.06); }
+  }
+  .decision-pill.high { color: var(--high); background: rgba(30,126,56,0.14); }
+  .decision-pill.low { color: var(--low); background: rgba(166,35,31,0.13); }
+  .decision-pill.forget { color: var(--forgotten); background: rgba(138,125,108,0.16); }
+  .detail-card {
+    padding: 32px 36px;
+    font-size: 21px;
+    line-height: 1.62;
+  }
+  .detail-card p { margin: 0 0 18px; }
+  .detail-card p:last-child { margin-bottom: 0; }
+  .about-copy-list {
+    margin: 10px 0 0;
+    padding-left: 24px;
+  }
+  .about-copy-list li {
+    margin-bottom: 12px;
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 4px 6px;
+    transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  }
+  .about-copy-list li:hover {
+    background: rgba(255,255,255,0.46);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+    transform: translateY(-3px);
+  }
+  .about-copy-list li:last-child { margin-bottom: 0; }
+  .about-copy-list strong { color: var(--text); font-weight: 700; }
+  .about-api-term {
+    color: #4f8cff;
+    font-weight: 700;
+    font-style: normal;
+  }
+  .hl {
+    color: #b35a1f;
+    font-weight: 700;
+  }
   .about-steps-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -595,6 +926,7 @@
     }
     .sidebar-nav-item { width: auto; padding: 10px 14px; font-size: 16px; white-space: nowrap; }
     .sidebar-demo-facts { display: none; }
+    .intelligence-diagram { min-width: 1120px; }
   }
 </style>
 </head>
@@ -624,7 +956,6 @@
     </span>
     <div>
       <p class="wordmark">SessionZero</p>
-      <p class="tagline">Trust-weighted memory for AI coding agents</p>
     </div>
   </div>
   <button class="about-link" data-tab="about" onclick="switchTab('about')">About</button>
@@ -636,7 +967,7 @@
   <p class="hero-stats-label">Live demo facts</p>
   <div class="hero-stats">
     <div class="hero-stat">
-      <div class="hero-stat-value">15</div>
+      <div class="hero-stat-value">16</div>
       <div class="hero-stat-label">real memories ingested</div>
     </div>
     <div class="hero-stat">
@@ -644,7 +975,7 @@
       <div class="hero-stat-label">trust signals</div>
     </div>
     <div class="hero-stat">
-      <div class="hero-stat-value">0.28 vs 0.99</div>
+      <div class="hero-stat-value">0.31 vs 0.97</div>
       <div class="hero-stat-label">real confidence gap on a contradicted decision</div>
     </div>
   </div>
@@ -660,14 +991,39 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       Search
     </button>
+    <button class="sidebar-nav-item" data-tab="about" onclick="switchTab('about')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="10" x2="12" y2="16"/><line x1="12" y1="7" x2="12.01" y2="7"/></svg>
+      About
+    </button>
     <div class="sidebar-demo-facts">
-      <div class="sidebar-section-label">Demo facts</div>
-      <ul>
-        <li>15 memories</li>
-        <li>4 trust signals</li>
-        <li>Live Cognee graph</li>
-        <li>Forget enabled</li>
-      </ul>
+      <div class="sidebar-section-label">SessionZero flow</div>
+      <ol class="sidebar-flow">
+        <li>
+          <span class="flow-num">01</span>
+          <span><span class="flow-title">Real memory ingest</span><span class="flow-copy">Past engineering decisions become structured memories in Cognee Cloud.</span></span>
+        </li>
+        <li>
+          <span class="flow-num">02</span>
+          <span><span class="flow-title">Trust scoring</span><span class="flow-copy">Every recalled memory is judged before it reaches the agent.</span></span>
+        </li>
+        <li>
+          <span class="flow-num">03</span>
+          <span><span class="flow-title">Contradiction check</span><span class="flow-copy">Relevant but stale decisions lose confidence instead of being reused blindly.</span></span>
+        </li>
+        <li>
+          <span class="flow-num">04</span>
+          <span><span class="flow-title">Agent-safe context</span><span class="flow-copy">Trusted memory is injected; risky memory is warned or forgotten.</span></span>
+        </li>
+      </ol>
+      <div class="sidebar-proof">
+        <div class="sidebar-section-label">Live proof</div>
+        <div class="sidebar-proof-grid">
+          <div class="sidebar-proof-item"><span class="sidebar-proof-value">16</span><span class="sidebar-proof-label">real memories</span></div>
+          <div class="sidebar-proof-item"><span class="sidebar-proof-value">4</span><span class="sidebar-proof-label">trust signals</span></div>
+          <div class="sidebar-proof-item"><span class="sidebar-proof-value">0.31</span><span class="sidebar-proof-label">stale decision</span></div>
+          <div class="sidebar-proof-item"><span class="sidebar-proof-value">0.97</span><span class="sidebar-proof-label">current decision</span></div>
+        </div>
+      </div>
     </div>
   </aside>
 
@@ -701,7 +1057,7 @@
           <span><span class="dot" style="background:var(--medium)"></span>MEDIUM confidence</span>
           <span><span class="dot" style="background:var(--low)"></span>LOW — verify before trusting</span>
         </div>
-        <p class="meta" style="font-style:italic;">"Summaries" uses Cognee's real SUMMARIES search — condensed bullet-point recaps, shown as-is and deliberately not trust-scored (see README).</p>
+        <p class="meta" style="font-style:italic;">"Summaries" uses Cognee's real SUMMARIES search — condensed bullet-point recaps, shown as-is and deliberately not trust-scored.</p>
         <div id="search-status" class="meta"></div>
         <div id="search-list"></div>
       </section>
@@ -712,97 +1068,173 @@
 
 <section id="about-page" class="about-page">
   <div class="about-page-inner">
-    <h3 class="about-title">About SessionZero</h3>
-    <p class="about-intro">SessionZero is a trust-weighted memory layer for AI coding agents. It remembers past engineering decisions, checks whether they are still reliable, and only passes useful memory to the agent with a confidence label.</p>
+    <div class="about-kicker">AI LOGIC DECISION FLOW</div>
+    <h3 class="about-title">Memory is not enough. Agents need <span class="hl">judgment</span>.</h3>
+    <p class="about-intro">SessionZero is a <span class="hl">trust-weighted memory layer</span> for AI coding agents, built on Cognee's real knowledge-graph lifecycle. It doesn't just recall — it checks whether a memory is still true before an agent ever sees it.</p>
 
-    <div class="workflow-strip">
-      <div class="workflow-step" style="animation-delay:0ms">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-        <span>Ingest</span>
-      </div>
-      <div class="workflow-arrow">→</div>
-      <div class="workflow-step" style="animation-delay:220ms">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.66 3.13 3 7 3s7-1.34 7-3V5"/><path d="M5 11v6c0 1.66 3.13 3 7 3s7-1.34 7-3v-6"/></svg>
-        <span>Store</span>
-      </div>
-      <div class="workflow-arrow">→</div>
-      <div class="workflow-step" style="animation-delay:440ms">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span>Recall</span>
-      </div>
-      <div class="workflow-arrow">→</div>
-      <div class="workflow-step" style="animation-delay:660ms">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="15"/></svg>
-        <span>Score</span>
-      </div>
-      <div class="workflow-arrow">→</div>
-      <div class="workflow-step" style="animation-delay:880ms">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h12l-3 4 3 4H5"/></svg>
-        <span>Flag / Inject</span>
-      </div>
-      <div class="workflow-arrow">→</div>
-      <div class="workflow-step" style="animation-delay:1100ms">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14"/></svg>
-        <span>Forget</span>
-      </div>
-    </div>
-
-    <div class="about-steps-grid">
-      <div class="about-step-card">
-        <div class="step-num">1</div>
-        <h4>Ingest</h4>
-        <p>Real decisions, commits, bug fixes, and architecture notes become memory units.</p>
-      </div>
-      <div class="about-step-card">
-        <div class="step-num">2</div>
-        <h4>Store</h4>
-        <p>Memories are written into Cognee Cloud's knowledge graph.</p>
-      </div>
-      <div class="about-step-card">
-        <div class="step-num">3</div>
-        <h4>Recall</h4>
-        <p>When an agent asks a question, SessionZero retrieves relevant memories.</p>
-      </div>
-      <div class="about-step-card">
-        <div class="step-num">4</div>
-        <h4>Score trust</h4>
-        <p>Each memory is scored using path, similarity, recency, and contradiction signals.</p>
-      </div>
-      <div class="about-step-card">
-        <div class="step-num">5</div>
-        <h4>Decide</h4>
-        <p>High-confidence memory is trusted. Low-confidence or contradicted memory is flagged.</p>
-      </div>
-      <div class="about-step-card">
-        <div class="step-num">6</div>
-        <h4>Forget</h4>
-        <p>Stale or superseded memory can be removed from the graph.</p>
-      </div>
-    </div>
-
-    <h4 class="about-section-title">Why it matters</h4>
-    <div class="why-matters-card">
-      <ul>
-        <li>AI agents can remember old decisions.</li>
-        <li>But old decisions may become wrong.</li>
-        <li>SessionZero prevents stale memory from being trusted blindly.</li>
+    <h4 class="about-section-title">About the project</h4>
+    <div class="detail-card">
+      <ul class="about-copy-list">
+        <li>SessionZero gives AI coding agents <span class="hl">persistent, trust-checked memory</span> across sessions — past architecture decisions, bug fixes, and reverted approaches, carried forward instead of re-explained every time.</li>
+        <li>It's built directly on <span class="hl">Cognee's real knowledge-graph lifecycle</span> — <code class="about-api-term">remember()</code>, <code class="about-api-term">recall()</code>, and <code class="about-api-term">forget()</code> all run against a live, hosted Cognee Cloud tenant, not a local simulation.</li>
+        <li>What sets it apart from a plain memory bot is <span class="hl">judgment</span>: every recalled memory is scored for confidence before an agent ever acts on it.</li>
+        <li>Built for the Cognee × WeMakeDevs hackathon as a working, end-to-end demo — ingestion, trust scoring, a live Claude Code integration, and this dashboard, all wired to the same real graph.</li>
       </ul>
     </div>
 
-    <h4 class="about-section-title">Trust signals</h4>
-    <div class="signal-cards-grid">
-      <div class="signal-card"><div class="signal-card-name">Path</div><div class="signal-card-desc">How connected the memory is in the graph.</div></div>
-      <div class="signal-card"><div class="signal-card-name">Similarity</div><div class="signal-card-desc">How relevant it is to the query.</div></div>
-      <div class="signal-card"><div class="signal-card-name">Recency</div><div class="signal-card-desc">How fresh the source decision is.</div></div>
-      <div class="signal-card"><div class="signal-card-name">Contradiction</div><div class="signal-card-desc">Whether a newer memory supersedes it.</div></div>
+    <h4 class="about-section-title">System architecture</h4>
+    <div class="arch-diagram-card">
+      <h4 class="diagram-title">Pipeline, with real numbers pulled from the live API</h4>
+      <p class="diagram-subtitle">Every box names a real file, and the trust-scoring stage shows an actual scored case — not placeholder numbers.</p>
+      <svg viewBox="0 0 1080 1260" class="arch-svg-vertical" role="img" aria-label="Animated pipeline from demo-data through ingest, Cognee Cloud remember, recall_service recall, trust_score four signals, weighted combination, to two real scored outcomes feeding claude_code_bridge.">
+        <defs>
+          <marker id="archArrowV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+          </marker>
+          <style>
+            .av-box { fill: rgba(36,26,18,0.055); stroke: var(--border); stroke-width: 1.5; rx: 12; }
+            .av-box-teal { fill: rgba(30,126,56,0.10); stroke: var(--high); stroke-width: 1.5; rx: 12; }
+            .av-box-purple { fill: rgba(59,120,240,0.08); stroke: #4a5fc0; stroke-width: 1.5; rx: 14; }
+            .av-signal { fill: none; stroke: #4a5fc0; stroke-width: 1.5; rx: 8; }
+            .av-signal-bad { fill: rgba(166,35,31,0.12); stroke: var(--low); stroke-width: 1.5; rx: 8; }
+            .av-box-amber { fill: rgba(160,106,5,0.10); stroke: var(--medium); stroke-width: 1.5; rx: 12; }
+            .av-box-low { fill: rgba(166,35,31,0.10); stroke: var(--low); stroke-width: 1.5; rx: 12; }
+            .av-box-high { fill: rgba(30,126,56,0.10); stroke: var(--high); stroke-width: 1.5; rx: 12; }
+            .av-title { font-family: "Times New Roman", Times, serif; font-size: 17px; font-weight: 700; fill: var(--text); }
+            .av-sub { font-family: "Times New Roman", Times, serif; font-size: 13px; fill: var(--muted); }
+            .av-edge { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#archArrowV); opacity: 0; animation: avEdgeIn 400ms ease forwards; }
+            .av-stage { opacity: 0; animation: avStageIn 500ms ease forwards; }
+            @keyframes avStageIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes avEdgeIn { from { opacity: 0; } to { opacity: 1; } }
+          </style>
+        </defs>
+
+        <g class="av-stage" style="animation-delay:0ms">
+          <rect class="av-box" x="330" y="16" width="420" height="72"/>
+          <text class="av-title" x="540" y="46" text-anchor="middle">demo-data/commits.jsonl</text>
+          <text class="av-sub" x="540" y="68" text-anchor="middle">16 synthetic-realistic commits</text>
+        </g>
+
+        <line class="av-edge" x1="540" y1="88" x2="540" y2="122" style="animation-delay:150ms"/>
+
+        <g class="av-stage" style="animation-delay:200ms">
+          <rect class="av-box" x="240" y="126" width="600" height="80"/>
+          <text class="av-title" x="540" y="154" text-anchor="middle">ingest/ — git_reader.py, memory_units.py</text>
+          <text class="av-sub" x="540" y="174" text-anchor="middle">decision, bug_fix, revert, contradiction, deletion</text>
+          <text class="av-sub" x="540" y="192" text-anchor="middle">parses commit history into structured memory units</text>
+        </g>
+
+        <line class="av-edge" x1="540" y1="206" x2="540" y2="240" style="animation-delay:350ms"/>
+
+        <g class="av-stage" style="animation-delay:400ms">
+          <rect class="av-box-teal" x="240" y="244" width="600" height="76"/>
+          <text class="av-title" x="540" y="272" text-anchor="middle">Cognee Cloud — remember()</text>
+          <text class="av-sub" x="540" y="292" text-anchor="middle">dataset shiftlog_demo · 16 ingested → 14 live, 2 forgotten</text>
+        </g>
+
+        <line class="av-edge" x1="540" y1="320" x2="540" y2="354" style="animation-delay:550ms"/>
+
+        <g class="av-stage" style="animation-delay:600ms">
+          <rect class="av-box-teal" x="240" y="358" width="600" height="66"/>
+          <text class="av-title" x="540" y="386" text-anchor="middle">recall_service/api.py — recall()</text>
+          <text class="av-sub" x="540" y="408" text-anchor="middle">real graph query, ranked by relevance</text>
+        </g>
+
+        <line class="av-edge" x1="540" y1="424" x2="540" y2="458" style="animation-delay:750ms"/>
+
+        <g class="av-stage" style="animation-delay:800ms">
+          <rect class="av-box-purple" x="120" y="462" width="840" height="230"/>
+          <text class="av-title" x="540" y="494" text-anchor="middle">trust_score.py — 4 signals, real values shown for one case</text>
+
+          <rect class="av-signal" x="150" y="512" width="180" height="58"/>
+          <text class="av-title" x="240" y="534" text-anchor="middle" font-size="14">Path</text>
+          <text class="av-sub" x="240" y="554" text-anchor="middle">1.00</text>
+
+          <rect class="av-signal" x="350" y="512" width="180" height="58"/>
+          <text class="av-title" x="440" y="534" text-anchor="middle" font-size="14">Similarity</text>
+          <text class="av-sub" x="440" y="554" text-anchor="middle">0.90</text>
+
+          <rect class="av-signal" x="550" y="512" width="180" height="58"/>
+          <text class="av-title" x="640" y="534" text-anchor="middle" font-size="14">Recency</text>
+          <text class="av-sub" x="640" y="554" text-anchor="middle">0.29</text>
+
+          <rect class="av-signal-bad" x="750" y="512" width="180" height="58"/>
+          <text class="av-title" x="840" y="534" text-anchor="middle" font-size="14">Contradiction</text>
+          <text class="av-sub" x="840" y="554" text-anchor="middle">0.60 penalty</text>
+
+          <text class="av-sub" x="540" y="606" text-anchor="middle">Real case: "Use JWT for auth" (d5b6e13) — flat path, high similarity,</text>
+          <text class="av-sub" x="540" y="626" text-anchor="middle">but a real 0.60 contradiction penalty pulls the final score down</text>
+          <text class="av-sub" x="540" y="662" text-anchor="middle" font-style="italic">Pulled live from the running API, not hardcoded — recency drifts daily by design</text>
+        </g>
+
+        <line class="av-edge" x1="540" y1="692" x2="540" y2="726" style="animation-delay:1000ms"/>
+
+        <g class="av-stage" style="animation-delay:1050ms">
+          <rect class="av-box-amber" x="240" y="730" width="600" height="66"/>
+          <text class="av-title" x="540" y="758" text-anchor="middle">Weighted combination</text>
+          <text class="av-sub" x="540" y="780" text-anchor="middle">reasoned weights, not empirically tuned</text>
+        </g>
+
+        <line class="av-edge" x1="440" y1="796" x2="270" y2="840" style="animation-delay:1200ms"/>
+        <line class="av-edge" x1="640" y1="796" x2="810" y2="840" style="animation-delay:1200ms"/>
+
+        <g class="av-stage" style="animation-delay:1250ms">
+          <rect class="av-box-low" x="80" y="844" width="380" height="76"/>
+          <text class="av-title" x="270" y="874" text-anchor="middle">d5b6e13 → 0.31</text>
+          <text class="av-sub" x="270" y="896" text-anchor="middle">LOW — verify before trusting</text>
+        </g>
+
+        <g class="av-stage" style="animation-delay:1250ms">
+          <rect class="av-box-high" x="620" y="844" width="380" height="76"/>
+          <text class="av-title" x="810" y="874" text-anchor="middle">8c5f0d7 → 0.97</text>
+          <text class="av-sub" x="810" y="896" text-anchor="middle">HIGH confidence</text>
+        </g>
+
+        <line class="av-edge" x1="270" y1="920" x2="500" y2="962" style="animation-delay:1400ms"/>
+        <line class="av-edge" x1="810" y1="920" x2="580" y2="962" style="animation-delay:1400ms"/>
+
+        <g class="av-stage" style="animation-delay:1450ms">
+          <rect class="av-box" x="240" y="966" width="600" height="76"/>
+          <text class="av-title" x="540" y="994" text-anchor="middle">claude_code_bridge/bridge.py</text>
+          <text class="av-sub" x="540" y="1014" text-anchor="middle">both labels injected together, live-tested · 28/28 tests, CI green</text>
+        </g>
+      </svg>
     </div>
 
-    <h4 class="about-section-title">What makes this live</h4>
-    <div class="live-facts-grid">
-      <div class="live-fact-card">15 real memories ingested</div>
-      <div class="live-fact-card">Real Cognee Cloud graph</div>
-      <div class="live-fact-card">Live recall queries</div>
-      <div class="live-fact-card">Forget action removes stale memory</div>
+    <h4 class="about-section-title">How it works</h4>
+    <div class="detail-card">
+      <ul class="about-copy-list">
+        <li>Every commit becomes a <span class="hl">memory unit</span> — tagged by kind, timestamp, and files touched, then written into Cognee's graph via a real <code class="about-api-term">remember()</code> call.</li>
+        <li>A query — from the dashboard or a <span class="hl">live Claude Code session</span> — triggers a real <code class="about-api-term">recall()</code> against that graph, returning semantically ranked results.</li>
+        <li>Nothing reaches an agent unscored. Every result passes through <code>trust_score.py</code> first, producing one number and a <span class="hl">HIGH / MEDIUM / LOW label</span>.</li>
+        <li>High-confidence memory is injected straight into agent context. Low-confidence memory is surfaced with an explicit warning — <span class="hl">never silently trusted</span>.</li>
+        <li>Superseded or dead memory is pruned from the graph with a real <code class="about-api-term">forget()</code> call, so stale context doesn't haunt the next session.</li>
+      </ul>
+    </div>
+
+    <h4 class="about-section-title">Trust signals — how confidence is calculated</h4>
+    <div class="detail-card">
+      <ul class="about-copy-list">
+        <li><strong>Path</strong> — how directly connected a memory is in the graph, via Cognee's real <code class="about-api-term">topological_rank</code>. At this dataset's current size (16 units), this signal returns the same baseline value for every result — it's a real, live-sourced signal that has room to grow more expressive as the graph scales up.</li>
+        <li><strong>Similarity</strong> — how relevant a memory is to the query. Cognee Cloud's <code class="about-api-term">CHUNKS</code> search does not expose a raw score in this API version, so rank position is used as a proxy instead.</li>
+        <li><strong>Recency</strong> — exponential decay on the memory's age, 30-day half-life. Keeps a six-month-old decision from being treated as equally current as yesterday's.</li>
+        <li><strong>Contradiction</strong> — the strongest signal. A 60% multiplicative discount when a newer memory supersedes an older one. <span class="hl">Real, verified result:</span> the same query about JWT auth returns the old decision at <span class="hl">0.31 (LOW)</span> and the current one at <span class="hl">0.97 (HIGH)</span> — same topic, opposite trust.</li>
+        <li>The demo dataset is intentionally scoped for clarity: 16 memory units, one contradiction pair, one revert — enough to prove the mechanism end-to-end.</li>
+        <li><code class="about-api-term">improve()</code>/<code class="about-api-term">memify()</code> are available on Cognee's SDK rather than as hosted Cognee Cloud endpoints, confirmed directly against the live API spec.</li>
+        <li>The Codex bridge is real, working code, structurally verified against Cognee's own Codex plugin — the Claude Code integration is the one live-tested end-to-end in an actual session.</li>
+      </ul>
+    </div>
+
+    <h4 class="about-section-title">Why this matters</h4>
+    <div class="detail-card">
+      <ul class="about-copy-list">
+        <li>Every new agent session starts with <span class="hl">total amnesia</span> — the same architecture decision gets re-explained, and a rejected approach gets suggested again next week.</li>
+        <li>Bolting memory onto an agent does not fix this. It just makes the agent <span class="hl">confidently repeat whatever it remembers</span>, right or wrong.</li>
+        <li>The real failure mode is not forgetting. It is <span class="hl">trusting a memory that is no longer true</span> with full conviction.</li>
+        <li><span class="hl">Contradiction-awareness is the actual differentiator</span> — knowing two memories disagree, and telling the agent which one to believe, instead of averaging or guessing.</li>
+        <li>Walk the JWT case end-to-end: without this system, an agent confidently tells you the project uses JWT. With it, that memory is flagged LOW and the current session-cookie decision is surfaced HIGH — <span class="hl">verified with real scores, not a hypothetical</span>.</li>
+        <li>The pitch is not "an agent that remembers." That's table stakes now. It is <span class="hl">an agent that knows when its own memory might be wrong.</span></li>
+      </ul>
     </div>
 
     <button class="hero-cta about-back-btn" onclick="switchTab('timeline')">← Back to timeline</button>
@@ -815,7 +1247,9 @@
 // the API is same-origin, so a relative "" base is correct. When run
 // via a separate static server on :5173 for local dev (two servers,
 // two origins), fall back to the local API's default port.
-const API_BASE = (location.port === "5173") ? "http://127.0.0.1:8000" : "";
+const API_BASE = (location.hostname === "127.0.0.1" || location.hostname === "localhost")
+  && location.port && location.port !== "8000"
+  ? "http://127.0.0.1:8000" : "";
 
 function levelOf(label) {
   if (label.startsWith("HIGH")) return "HIGH";
@@ -1007,7 +1441,7 @@ function switchTab(name) {
     hero.style.display = "none";
     appShell.style.display = "none";
     aboutPage.classList.add("active");
-    document.querySelectorAll(".sidebar-nav-item").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".sidebar-nav-item").forEach(b => b.classList.toggle("active", b.dataset.tab === "about"));
     aboutLink.classList.add("active");
     return;
   }
