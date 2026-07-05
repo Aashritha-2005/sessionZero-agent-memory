@@ -97,7 +97,7 @@ score = mean(path_length, similarity, recency) × (1 − contradiction_penalty)
 
 clipped to `[0, 1]`, labeled **HIGH** (≥0.7) / **MEDIUM** (≥0.4) / **LOW — verify before trusting** (below 0.4).
 
-**Verified example** (real data, not a synthetic test case): for the query *"Does ShiftLog use JWT for authentication?"*, the correct, current decision (session cookies) scored **0.99 HIGH**, while the old, superseded JWT decision — still semantically on-topic — scored only **0.28 LOW**, flagged with a contradiction warning instead of silently injected.
+**Verified example** (real data, not a synthetic test case): for the query *"Does ShiftLog use JWT for authentication?"*, the correct, current decision (session cookies) scored **0.97 HIGH**, while the old, superseded JWT decision — still semantically on-topic — scored only **0.31 LOW**, flagged with a contradiction warning instead of silently injected. (These exact numbers drift slightly day to day since recency is date-based decay — rerun `ingest.recall_check` for the current values.)
 
 ---
 
