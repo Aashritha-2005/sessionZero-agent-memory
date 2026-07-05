@@ -35,22 +35,17 @@
 
   /* ---------------- Hero (sits above the timeline dashboard, same page) ---------------- */
   .hero {
-    padding: 56px 36px 48px;
+    padding: 72px 36px 64px;
     text-align: center;
     border-bottom: 1px solid var(--border);
   }
-  .hero-wordmark {
-    font-size: 42px;
-    font-weight: 700;
-    margin: 0 0 10px;
-  }
   .hero-value-prop {
-    font-size: 19px;
+    font-size: 20px;
     font-style: italic;
     color: var(--muted-on-dark);
     max-width: 640px;
-    margin: 0 auto 28px;
-    line-height: 1.5;
+    margin: 0 auto 32px;
+    line-height: 1.6;
   }
   .hero-cta {
     background: linear-gradient(180deg, #3b78f0, #2a5fd0);
@@ -65,23 +60,31 @@
     transition: transform 200ms ease, box-shadow 200ms ease;
   }
   .hero-cta:hover { transform: scale(1.03) translateY(-1px); box-shadow: 0 6px 18px rgba(47,111,235,0.4); }
+  .hero-stats-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted-on-dark);
+    margin: 56px 0 20px;
+  }
   .hero-stats {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 24px;
     flex-wrap: wrap;
-    margin-top: 40px;
   }
   .hero-stat {
     background: var(--card);
+    color: var(--text);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 20px 24px;
-    min-width: 200px;
-    box-shadow: 0 1px 2px rgba(36,26,18,0.06), 0 6px 18px rgba(36,26,18,0.06);
+    padding: 26px 30px;
+    min-width: 220px;
+    box-shadow: 0 1px 2px rgba(36,26,18,0.10), 0 6px 18px rgba(36,26,18,0.10);
   }
-  .hero-stat-value { font-size: 28px; font-weight: 700; }
-  .hero-stat-label { font-size: 13px; font-style: italic; color: var(--muted); margin-top: 6px; }
+  .hero-stat-value { font-size: 34px; font-weight: 700; }
+  .hero-stat-label { font-size: 14px; color: var(--muted); margin-top: 8px; }
 
   /* ---------------- Intro splash ---------------- */
   .intro-overlay {
@@ -349,6 +352,7 @@
 
   .timeline-item {
     background: linear-gradient(180deg, #ffffff, var(--card));
+    color: var(--text);
     border: 1px solid var(--border);
     border-left: 4px solid var(--border);
     border-radius: 10px;
@@ -361,7 +365,7 @@
     transform: translateY(-2px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.45), 0 14px 32px rgba(0,0,0,0.36);
   }
-  .timeline-item.forgotten { opacity: 0.5; }
+  .timeline-item.forgotten { opacity: 0.68; }
   .timeline-item.HIGH { border-left-color: var(--high); }
   .timeline-item.MEDIUM { border-left-color: var(--medium); }
   .timeline-item.LOW {
@@ -463,6 +467,7 @@
 
   .about-panel {
     background: linear-gradient(180deg, #ffffff, var(--card));
+    color: var(--text);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 28px;
@@ -472,6 +477,19 @@
   }
   .about-panel h3 { font-size: 20px; margin-top: 0; }
   .about-panel .hint { font-style: italic; color: var(--muted); font-size: 14px; }
+  .about-panel b { color: var(--text); }
+  .about-panel ul { margin: 0 0 16px; padding-left: 22px; }
+  .about-panel li { margin-bottom: 8px; }
+  .about-panel code { color: #2a5fd0; font-style: normal; }
+
+  /* Standalone About page — replaces the hero + dashboard entirely while
+     active, rather than showing beside the timeline. Pure display
+     toggling in JS (switchTab), no change to any timeline/recall/forget
+     logic underneath. */
+  .about-page { display: none; padding: 64px 36px; }
+  .about-page.active { display: block; animation: panelFade 320ms ease; }
+  .about-page-panel { max-width: 760px; margin: 0 auto; }
+  .about-back-btn { display: block; margin: 28px auto 0; }
 </style>
 </head>
 <body>
@@ -507,9 +525,9 @@
 </nav>
 
 <section class="hero">
-  <p class="hero-wordmark">SessionZero</p>
   <p class="hero-value-prop">Trust-weighted memory for AI coding agents — real Cognee Cloud graph, verified live.</p>
   <button class="hero-cta" onclick="document.getElementById('app-shell').scrollIntoView({behavior:'smooth'})">See the live timeline ↓</button>
+  <p class="hero-stats-label">Live demo facts</p>
   <div class="hero-stats">
     <div class="hero-stat">
       <div class="hero-stat-value">15</div>
@@ -599,17 +617,52 @@
         <div id="search-list"></div>
       </section>
 
-      <section id="tab-about" class="tab-panel">
-        <div class="about-panel">
-          <h3>SessionZero</h3>
-          <p>Trust-weighted memory for AI coding agents, built on Cognee's knowledge-graph memory lifecycle. Every recalled memory is scored on path length, semantic similarity, recency, and contradiction with newer knowledge — then labeled HIGH, MEDIUM, or LOW confidence before it ever reaches the agent.</p>
-          <p>A stale or contradicted memory isn't silently dropped or silently trusted — it's surfaced with a visible warning, so the human or the agent can decide.</p>
-          <p class="hint">See the project README for the full architecture, Cognee API usage, and known limitations.</p>
-        </div>
-      </section>
     </main>
   </div>
 </div>
+
+<section id="about-page" class="about-page">
+  <div class="about-panel about-page-panel">
+    <h3>About SessionZero</h3>
+
+    <p><b>What it is.</b> SessionZero (repo name: <code>cognee-agent-memory</code>) is a trust-weighted memory layer for AI coding agents, built on Cognee's real knowledge-graph lifecycle. It remembers past architecture decisions and bug fixes across sessions — and unlike a plain memory bot, it tells you how sure it is before handing a memory to the agent.</p>
+
+    <p><b>Why trust-weighted memory matters.</b> A naive memory layer solves recall but not trust: it will hand an agent a decision that was later reverted or contradicted with the exact same confidence as one that's still current. That's a real failure mode — the agent repeats an old mistake with total conviction. SessionZero scores every recalled memory before it reaches the agent, so a stale or contradicted memory gets flagged instead of silently trusted.</p>
+
+    <p><b>How the pipeline works:</b> <code>Ingest → Recall → Trust score → Flag / Inject → Forget</code></p>
+    <ul>
+      <li><b>Ingest</b> — commit history and decisions are structured into memory units and written to the graph via Cognee's real <code>remember()</code>.</li>
+      <li><b>Recall</b> — a query hits Cognee's live graph via real <code>recall()</code>, returning ranked, semantically relevant memories.</li>
+      <li><b>Trust score</b> — every recalled memory is scored on 4 signals (below) before it reaches the agent.</li>
+      <li><b>Flag / Inject</b> — HIGH confidence is trusted and injected as-is; LOW confidence is surfaced with a warning, never silently believed.</li>
+      <li><b>Forget</b> — stale or superseded memories are removed from the graph via real <code>forget()</code>.</li>
+    </ul>
+
+    <p><b>What Cognee Cloud is doing in this demo.</b> All of the above runs against a real, hosted Cognee Cloud tenant — not a mock. The 15 memories on the Timeline tab are genuinely stored in Cognee's knowledge graph; every search you run there is a real API call.</p>
+
+    <p><b>What the 4 trust signals mean:</b></p>
+    <ul>
+      <li><b>Path</b> — how directly connected the memory is in the knowledge graph.</li>
+      <li><b>Similarity</b> — how semantically relevant the memory is to your query.</li>
+      <li><b>Recency</b> — an exponential decay based on how old the memory's source decision is.</li>
+      <li><b>Contradiction</b> — whether a newer memory explicitly supersedes this one.</li>
+    </ul>
+
+    <p><b>Why contradicted or stale memories show lower confidence.</b> The contradiction signal acts as a discount on the whole score, not just another additive term — so a memory that's been superseded gets pulled down even if it's still a strong semantic match for your query. That's deliberate: the whole point is that being topically relevant isn't the same as being currently true.</p>
+
+    <p><b>What makes this demo real, not simulated:</b></p>
+    <ul>
+      <li>15 real memories ingested into a real Cognee Cloud dataset</li>
+      <li>A real Cognee knowledge graph, not a local mock</li>
+      <li>Live recall — every search on the Timeline/Search tabs is a real, live query</li>
+      <li>A real <code>forget()</code> action — memories can be permanently pruned from the graph via the dashboard, and it actually happens</li>
+    </ul>
+
+    <p class="hint">See the project README for the full architecture, Cognee API usage table, and known limitations.</p>
+
+    <button class="hero-cta about-back-btn" onclick="switchTab('timeline')">← Back to timeline</button>
+  </div>
+</section>
 
 <script>
 // Environment-aware: when this page is served BY recall_service/api.py
@@ -797,10 +850,31 @@ function setSearchStatus(msg) {
 // Pure presentational tab-switching: shows/hides pre-rendered sections,
 // no navigation, no new fetches beyond what each section already does.
 function switchTab(name) {
+  const hero = document.querySelector(".hero");
+  const appShell = document.getElementById("app-shell");
+  const aboutPage = document.getElementById("about-page");
+  const aboutLink = document.querySelector(".about-link");
+
+  if (name === "about") {
+    // About is its own focused view — hide the hero + dashboard entirely
+    // rather than showing it beside the timeline. Pure display toggling;
+    // no timeline/recall/forget logic is touched.
+    hero.style.display = "none";
+    appShell.style.display = "none";
+    aboutPage.classList.add("active");
+    document.querySelectorAll(".sidebar-nav-item").forEach(b => b.classList.remove("active"));
+    aboutLink.classList.add("active");
+    return;
+  }
+
+  hero.style.display = "";
+  appShell.style.display = "";
+  aboutPage.classList.remove("active");
+  aboutLink.classList.remove("active");
+
   document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
   document.getElementById(`tab-${name}`).classList.add("active");
   document.querySelectorAll(".sidebar-nav-item").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
-  document.querySelector(".about-link").classList.toggle("active", name === "about");
 }
 
 // Intro splash: pure presentational, auto-dismisses under 1.5s, click
